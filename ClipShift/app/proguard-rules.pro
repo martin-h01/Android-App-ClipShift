@@ -19,3 +19,9 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Verhindert, dass R8 die FFmpeg-Wrapper kaputt macht
+-keep class com.yausername.** { *; }
+-keep class io.github.junkfood02.** { *; }
+-dontwarn com.yausername.**
+-dontwarn io.github.junkfood02.**
