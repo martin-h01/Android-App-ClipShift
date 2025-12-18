@@ -106,8 +106,8 @@ fun ClipShiftApp(
                     if (urlText.isBlank()) {
                         Toast.makeText(context, "Bitte erst eine URL eingeben!", Toast.LENGTH_SHORT).show()
                     } else {
-                        // FIX: Wir übergeben "MP3" als zweiten Parameter
-                        viewModel.startDownload(urlText, "MP3")
+                        // FIX: Das korrekt ausgewählte Format wird übergeben.
+                        viewModel.startDownload(urlText, selectedFormat)
                     }
                 }
             )

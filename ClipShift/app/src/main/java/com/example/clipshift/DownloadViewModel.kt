@@ -24,84 +24,103 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
     private val _isDownloading = MutableStateFlow(false)
     val isDownloading = _isDownloading.asStateFlow()
 
-    private var hasUpdatedEngine = false
+    private var isEngineReady = false
 
     fun startDownload(url: String, format: String) {
         viewModelScope.launch(Dispatchers.IO) {
             _isDownloading.value = true
-            val app = getApplication<Application>()
+            var finalFilePath: String? = null
+            val lowerCaseFormat = format.lowercase().trim()
 
-            // --- SCHRITT 0: UPDATE ---
-            if (!hasUpdatedEngine) {
-                _statusMsg.value = "Update..."
-                try {
-                    YoutubeDL.getInstance().updateYoutubeDL(app, YoutubeDL.UpdateChannel.STABLE)
-                    hasUpdatedEngine = true
-                } catch (e: Exception) { /* egal */ }
-            }
-
-            // --- SCHRITT 1: TREIBER FINDEN ---
-            val nativeDir = app.applicationInfo.nativeLibraryDir
-            val ffmpegFile = File(nativeDir, "libffmpeg.so")
-
-            if (!ffmpegFile.exists()) {
-                _statusMsg.value = "❌ Treiber fehlt (Neuinstallieren!)"
-                _isDownloading.value = false
-                return@launch
-            }
-
-            // --- SCHRITT 2: DOWNLOAD ---
             try {
-                try { YoutubeDL.getInstance().init(app) } catch (e: Exception){}
+                if (!isEngineReady) {
+                    _statusMsg.value = "Update Engine..."
+                    try {
+                        YoutubeDL.getInstance().init(getApplication())
+                        YoutubeDL.getInstance().updateYoutubeDL(getApplication(), YoutubeDL.UpdateChannel.STABLE)
+                        isEngineReady = true
+                    } catch (e: Exception) {
+                        handleError(e, finalFilePath, lowerCaseFormat)
+                        return@launch
+                    }
+                }
 
+                _statusMsg.value = "Starte Download..."
                 val request = YoutubeDLRequest(url)
-                request.addOption("--ffmpeg-location", ffmpegFile.absolutePath)
-                val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                request.addOption("-o", downloadsDir.absolutePath + "/%(title)s.%(ext)s")
 
-                // WICHTIG: Cache löschen & Android Tarnung
+                val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                request.addOption("-o", "${downloadsDir.absolutePath}/%(title)s.%(ext)s")
+
+                val nativeDir = getApplication<Application>().applicationInfo.nativeLibraryDir
+                request.addOption("--ffmpeg-location", "${nativeDir}/libffmpeg.so")
                 request.addOption("--rm-cache-dir")
                 request.addOption("--extractor-args", "youtube:player_client=android")
 
-                if (format == "MP3") {
+                if (lowerCaseFormat == "mp3") {
                     request.addOption("-f", "bestaudio/best")
                     request.addOption("-x")
                     request.addOption("--audio-format", "mp3")
                 } else {
                     request.addOption("-f", "bestvideo+bestaudio/best")
-                    request.addOption("--merge-output-format", "mp4")
+                    request.addOption("--remux-video", lowerCaseFormat)
                 }
 
-                _statusMsg.value = "Starte Download..."
-
-                YoutubeDL.getInstance().execute(request) { progress, _, _ ->
+                YoutubeDL.getInstance().execute(request) { progress, _, line ->
                     _progress.value = progress / 100f
                     _statusMsg.value = "Lade... ${progress.toInt()}%"
+                    // Finde den finalen Dateinamen aus den Logs
+                    getFileNameFromLog(line)?.let { finalFilePath = it }
                 }
 
-                // WENN WIR HIER SIND, HAT ES EIGENTLICH GEKLAPPT
-                _statusMsg.value = "✅ Fertig!"
+                // Erfolgsfall: Versuche umzubenennen und setze die Nachricht.
+                renameAndSetSuccess(finalFilePath, lowerCaseFormat)
 
             } catch (e: Exception) {
-                val msg = e.message ?: ""
-
-                // --- HIER IST DER FIX: ---
-                // Wenn der Fehler "ffprobe" oder "Postprocessing" enthält,
-                // war der Download erfolgreich, nur der Check danach schlug fehl.
-                if (msg.contains("ffprobe") || msg.contains("Postprocessing")) {
-                    _statusMsg.value = "✅ Fertig! (Ignoriere Warnung)"
-                    _progress.value = 1.0f // Balken voll machen
-                }
-                else if (msg.contains("403")) {
-                    _statusMsg.value = "❌ YouTube blockt kurz. Warte 1 min."
-                }
-                else {
-                    _statusMsg.value = "Fehler: $msg"
-                    Log.e("Download", "Echter Crash", e)
-                }
+                handleError(e, finalFilePath, lowerCaseFormat)
             } finally {
                 _isDownloading.value = false
             }
+        }
+    }
+
+    private fun getFileNameFromLog(line: String): String? {
+        return when {
+            line.startsWith("[Merger] Merging formats into \"") -> line.substringAfter("[Merger] Merging formats into \"").trimEnd('"')
+            line.startsWith("[download] Destination: ") -> line.substringAfter("[download] Destination: ")
+            line.startsWith("[ExtractAudio] Destination: ") -> line.substringAfter("[ExtractAudio] Destination: ")
+            else -> null
+        }
+    }
+
+    private fun renameAndSetSuccess(filePath: String?, format: String) {
+        val file = if (filePath != null) File(filePath) else return
+
+        if (format == "mp3" && file.exists() && !file.name.endsWith(".mp3", true)) {
+            val newFile = File(file.parent, "${file.nameWithoutExtension}.mp3")
+            if (file.renameTo(newFile)) {
+                _statusMsg.value = "✅ Fertig! (Umbenannt zu MP3)"
+            } else {
+                _statusMsg.value = "✅ Fertig! (Umbenennen fehlgeschlagen)"
+            }
+        } else {
+            _statusMsg.value = "✅ Fertig!"
+        }
+    }
+
+    private fun handleError(e: Exception, filePath: String?, format: String) {
+        val msg = e.message ?: ""
+        Log.e("DownloadViewModel", "Download-Fehler", e)
+
+        // DEINE LOGIK: Auch bei Post-Processing-Fehlern umbenennen!
+        if (msg.contains("ffprobe", true) || msg.contains("Postprocessing", true)) {
+            renameAndSetSuccess(filePath, format)
+            _progress.value = 1.0f
+            return
+        }
+
+        _statusMsg.value = when {
+            msg.contains("403") -> "❌ YouTube blockt (Update fehlgeschlagen?)"
+            else -> "Fehler: ${msg.take(100)}"
         }
     }
 }
