@@ -26,7 +26,7 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
 
     private var isEngineReady = false
 
-    fun startDownload(url: String, format: String) {
+    fun startDownload(url: String, format: String, resolution: String?, audioQuality: String?) {
         viewModelScope.launch(Dispatchers.IO) {
             _isDownloading.value = true
             var finalFilePath: String? = null
@@ -48,31 +48,41 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
                 _statusMsg.value = "Starte Download..."
                 val request = YoutubeDLRequest(url)
 
-                val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                request.addOption("-o", "${downloadsDir.absolutePath}/%(title)s.%(ext)s")
+                val baseDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                val subDir = if (lowerCaseFormat == "mp3") "ClipShift-Audio" else "ClipShift-Video"
+                val targetDir = File(baseDir, subDir)
+                if (!targetDir.exists()) {
+                    targetDir.mkdirs()
+                }
+                request.addOption("-o", "${targetDir.absolutePath}/%(title)s.%(ext)s")
 
                 val nativeDir = getApplication<Application>().applicationInfo.nativeLibraryDir
                 request.addOption("--ffmpeg-location", "${nativeDir}/libffmpeg.so")
                 request.addOption("--rm-cache-dir")
                 request.addOption("--extractor-args", "youtube:player_client=android")
 
+                // DEINE BEWÄHRTE LOGIK, KORREKT ÜBERSETZT
                 if (lowerCaseFormat == "mp3") {
                     request.addOption("-f", "bestaudio/best")
                     request.addOption("-x")
                     request.addOption("--audio-format", "mp3")
+                } else if (lowerCaseFormat == "mp4" && resolution != null) {
+                    val height = resolution.replace("p", "")
+                    // Dein Befehl, bei dem die Auflösung dynamisch eingesetzt wird.
+                    val formatSelector = "bestvideo[height<=$height][ext=mp4]+bestaudio[ext=m4a]/best[height<=$height][ext=mp4]"
+                    request.addOption("-f", formatSelector)
                 } else {
-                    request.addOption("-f", "bestvideo+bestaudio/best")
-                    request.addOption("--remux-video", lowerCaseFormat)
+                    // Robuster Standard-MP4-Download.
+                   request.addOption("-f", "best[ext=mp4]/bestvideo[ext=m4a]+bestaudio[ext=m4a]")
+
                 }
 
                 YoutubeDL.getInstance().execute(request) { progress, _, line ->
                     _progress.value = progress / 100f
                     _statusMsg.value = "Lade... ${progress.toInt()}%"
-                    // Finde den finalen Dateinamen aus den Logs
                     getFileNameFromLog(line)?.let { finalFilePath = it }
                 }
 
-                // Erfolgsfall: Versuche umzubenennen und setze die Nachricht.
                 renameAndSetSuccess(finalFilePath, lowerCaseFormat)
 
             } catch (e: Exception) {
@@ -111,7 +121,6 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
         val msg = e.message ?: ""
         Log.e("DownloadViewModel", "Download-Fehler", e)
 
-        // DEINE LOGIK: Auch bei Post-Processing-Fehlern umbenennen!
         if (msg.contains("ffprobe", true) || msg.contains("Postprocessing", true)) {
             renameAndSetSuccess(filePath, format)
             _progress.value = 1.0f
@@ -120,6 +129,7 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
 
         _statusMsg.value = when {
             msg.contains("403") -> "❌ YouTube blockt (Update fehlgeschlagen?)"
+            msg.contains("No video formats found") || msg.contains("format not available") -> "❌ Gewähltes Format nicht verfügbar."
             else -> "Fehler: ${msg.take(100)}"
         }
     }

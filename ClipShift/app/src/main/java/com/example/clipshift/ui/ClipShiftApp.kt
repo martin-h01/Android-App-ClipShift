@@ -56,7 +56,7 @@ fun ClipShiftApp(
     var urlText by remember { mutableStateOf("") }
 
     // Experten-Einstellungen
-    var selectedResolution by remember { mutableStateOf("720p") }
+    var selectedResolution by remember { mutableStateOf("") }
     var selectedQuality by remember { mutableStateOf("MP3 192 kBit/s") }
     var selectedFormat by remember { mutableStateOf("MP4") }
 
@@ -138,8 +138,8 @@ fun ClipShiftApp(
                     if (urlText.isBlank()) {
                         Toast.makeText(context, "Bitte erst eine URL eingeben!", Toast.LENGTH_SHORT).show()
                     } else {
-                        // FIX: Das korrekt ausgewählte Format wird übergeben.
-                        viewModel.startDownload(urlText, selectedFormat)
+                        // EXPERTENMODUS: Auflösung und Qualität werden übergeben
+                        viewModel.startDownload(urlText, selectedFormat, selectedResolution, selectedQuality)
                     }
                 }
             )

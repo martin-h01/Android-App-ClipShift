@@ -19,7 +19,7 @@ fun ExpertOptions(
     contentColor: Color
 ) {
     Text("Auflösung:", fontWeight = FontWeight.Bold, modifier = Modifier.fillMaxWidth())
-    val resolutions = listOf("360p", "480p", "720p", "1080p")
+    val resolutions = listOf("144p", "240p", "360p", "480p", "720p", "1080p", "1440p", "2160p")
     resolutions.forEach { res ->
         SelectableOption(
             label = res,

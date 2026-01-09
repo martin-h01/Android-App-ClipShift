@@ -58,8 +58,8 @@ fun ActionButtonsSection(
                 expanded = menuExpanded,
                 onDismissRequest = { menuExpanded = false }
             ) {
-                // "AVI" entfernt, da es nicht zuverlässig unterstützt wird.
-                listOf("MP4", "MP3", "MKV").forEach { format ->
+                // Liste auswählabrer Dateiformate
+                listOf("MP4", "MP3" ).forEach { format ->
                     DropdownMenuItem(
                         text = { Text(format) },
                         onClick = {
