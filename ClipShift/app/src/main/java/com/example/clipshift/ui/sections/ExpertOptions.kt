@@ -1,5 +1,6 @@
 package com.example.clipshift.ui.sections
 
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -14,12 +15,18 @@ fun ExpertOptions(
     currentRes: String,
     onResSelected: (String) -> Unit,
     currentQuality: String,
-    onQualitySelected: (String) -> Unit
+    onQualitySelected: (String) -> Unit,
+    contentColor: Color
 ) {
     Text("Auflösung:", fontWeight = FontWeight.Bold, modifier = Modifier.fillMaxWidth())
     val resolutions = listOf("360p", "480p", "720p", "1080p")
     resolutions.forEach { res ->
-        SelectableOption(label = res, selected = (res == currentRes)) { onResSelected(res) }
+        SelectableOption(
+            label = res,
+            selected = (res == currentRes),
+            onClick = { onResSelected(res) },
+            color = contentColor
+        )
     }
 
     Spacer(modifier = Modifier.height(16.dp))
@@ -32,6 +39,11 @@ fun ExpertOptions(
         "FLAC (Verlustfrei)"
     )
     qualities.forEach { qual ->
-        SelectableOption(label = qual, selected = (qual == currentQuality)) { onQualitySelected(qual) }
+        SelectableOption(
+            label = qual,
+            selected = (qual == currentQuality),
+            onClick = { onQualitySelected(qual) },
+            color = contentColor
+        )
     }
 }

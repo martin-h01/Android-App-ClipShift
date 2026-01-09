@@ -1,6 +1,9 @@
 package com.example.clipshift.ui
 
+import android.R
 import android.widget.Toast
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,6 +21,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,6 +33,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -39,6 +44,7 @@ import com.example.clipshift.ui.sections.ActionButtonsSection
 import com.example.clipshift.ui.sections.ExpertOptions
 import com.example.clipshift.ui.sections.LogoSection
 import com.example.clipshift.ui.sections.UrlInputSection
+import com.example.clipshift.ui.sections.DarkMode
 
 @Composable
 fun ClipShiftApp(
@@ -58,46 +64,72 @@ fun ClipShiftApp(
     val statusMsg by viewModel.statusMsg.collectAsState()
     val isDownloading by viewModel.isDownloading.collectAsState()
     val progress by viewModel.progress.collectAsState()
+    var isDarkMode by remember { mutableStateOf(false) }
+    val backgroundColor = if (isDarkMode) Color.DarkGray else Color.White
+    val contentColor = if (isDarkMode) Color.White else Color.Black
+    val selectedTextColor = if (isDarkMode) Color.White else Color.Black
+    val selectedIconColor = if (isDarkMode) Color(0xFF2196F3) else Color(0xFFFF0000)
+
+
+
 
     val context = LocalContext.current
 
-    Scaffold(
+    Scaffold(containerColor = backgroundColor , contentColor = contentColor,
         bottomBar = {
-            NavigationBar {
+            NavigationBar(containerColor = backgroundColor , contentColor = contentColor) {
                 NavigationBarItem(
                     selected = selectedTab == 0,
                     onClick = { selectedTab = 0 },
                     label = { Text("Einfacher Modus") },
-                    icon = { Icon(Icons.Default.PlayArrow, contentDescription = null) }
+                    icon = { Icon(Icons.Default.PlayArrow, contentDescription = null)},
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = selectedIconColor,
+                        unselectedIconColor = selectedIconColor,
+                        selectedTextColor = selectedTextColor,
+                        unselectedTextColor = selectedTextColor
+                    )
                 )
                 NavigationBarItem(
                     selected = selectedTab == 1,
                     onClick = { selectedTab = 1 },
                     label = { Text("Experten Modus") },
-                    icon = { Icon(Icons.Default.Info, contentDescription = null) }
+                    icon = { Icon(Icons.Default.Info, contentDescription = null) },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = selectedIconColor,
+                        unselectedIconColor = selectedIconColor,
+                        selectedTextColor = selectedTextColor,
+                        unselectedTextColor = selectedTextColor
+                    )
                 )
             }
         }
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            LogoSection()
+                Box(
+                    modifier = Modifier
+                        .padding(innerPadding)
+                        .fillMaxSize()
+                        .background(backgroundColor)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp)
+                            .verticalScroll(rememberScrollState())
+                            .background(backgroundColor),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        LogoSection()
 
-            Spacer(modifier = Modifier.height(32.dp))
+                        Spacer(modifier = Modifier.height(32.dp))
 
-            // URL Eingabe
+            // URL Eingabe ist immer sichtbar
             UrlInputSection(
                 text = urlText,
                 onTextChange = { urlText = it }
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
 
             ActionButtonsSection(
                 currentFormat = selectedFormat,
@@ -134,19 +166,31 @@ fun ClipShiftApp(
                     MaterialTheme.colorScheme.onSurface
             )
 
-            // Experten-Optionen nur anzeigen, wenn Tab 1 aktiv ist
-            if (selectedTab == 1) {
-                Spacer(modifier = Modifier.height(32.dp))
-                Divider()
-                Spacer(modifier = Modifier.height(16.dp))
+                        if (selectedTab == 1) {
+                            Spacer(modifier = Modifier.height(32.dp))
+                            Divider()
+                            Spacer(modifier = Modifier.height(16.dp))
 
-                ExpertOptions(
-                    currentRes = selectedResolution,
-                    onResSelected = { selectedResolution = it },
-                    currentQuality = selectedQuality,
-                    onQualitySelected = { selectedQuality = it }
-                )
+                            ExpertOptions(
+                                currentRes = selectedResolution,
+                                onResSelected = { selectedResolution = it },
+                                currentQuality = selectedQuality,
+                                onQualitySelected = { selectedQuality = it },
+                                contentColor = contentColor
+                            )
+                        }
+                    }
+
+                    DarkMode(
+                        isDarkMode = isDarkMode,
+                        onDarkModeChange = { isDarkMode = it },
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd) // Jetzt funktioniert die Ausrichtung
+                            .padding(16.dp)             // Abstand zum Rand der Box
+                    )
+
+
+                }
+
             }
         }
-    }
-}
