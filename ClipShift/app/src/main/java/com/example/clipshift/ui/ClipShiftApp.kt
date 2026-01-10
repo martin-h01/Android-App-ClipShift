@@ -35,6 +35,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 // NEU: Importe für ViewModel
@@ -94,6 +97,7 @@ fun ClipShiftApp(
                     selected = selectedTab == 1,
                     onClick = { selectedTab = 1 },
                     label = { Text("Experten Modus") },
+                    modifier = Modifier.testTag("ExpertModus"),
                     icon = { Icon(Icons.Default.Info, contentDescription = null) },
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = selectedIconColor,
@@ -109,6 +113,10 @@ fun ClipShiftApp(
                     modifier = Modifier
                         .padding(innerPadding)
                         .fillMaxSize()
+                        .testTag("MainContent")
+                        .semantics{
+                            contentDescription = if (isDarkMode) "dark" else "light"
+                        }
                         .background(backgroundColor)
                 ) {
                     Column(
@@ -126,7 +134,8 @@ fun ClipShiftApp(
             // URL Eingabe ist immer sichtbar
             UrlInputSection(
                 text = urlText,
-                onTextChange = { urlText = it }
+                onTextChange = { urlText = it },
+                modifier = Modifier.testTag("UrlInput")
             )
 
                         Spacer(modifier = Modifier.height(16.dp))
@@ -134,6 +143,7 @@ fun ClipShiftApp(
             ActionButtonsSection(
                 currentFormat = selectedFormat,
                 onFormatSelected = { selectedFormat = it },
+                modifier = Modifier.testTag("DownloadButton"),
                 onDownloadClick = {
                     if (urlText.isBlank()) {
                         Toast.makeText(context, "Bitte erst eine URL eingeben!", Toast.LENGTH_SHORT).show()
@@ -160,6 +170,7 @@ fun ClipShiftApp(
                 text = statusMsg,
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
+                modifier = Modifier.testTag("TextOutput"),
                 color = if (statusMsg.contains("Fehler") || statusMsg.contains("❌"))
                     MaterialTheme.colorScheme.error
                 else
@@ -185,8 +196,9 @@ fun ClipShiftApp(
                         isDarkMode = isDarkMode,
                         onDarkModeChange = { isDarkMode = it },
                         modifier = Modifier
-                            .align(Alignment.BottomEnd) // Jetzt funktioniert die Ausrichtung
-                            .padding(16.dp)             // Abstand zum Rand der Box
+                            .testTag("DarkModeButton")
+                            .align(Alignment.BottomEnd)
+                            .padding(16.dp)
                     )
 
 

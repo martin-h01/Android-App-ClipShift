@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
@@ -16,22 +17,28 @@ fun ExpertOptions(
     onResSelected: (String) -> Unit,
     currentQuality: String,
     onQualitySelected: (String) -> Unit,
-    contentColor: Color
+    contentColor: Color,
 ) {
-    Text("Auflösung:", fontWeight = FontWeight.Bold, modifier = Modifier.fillMaxWidth())
+    Text("Auflösung:", fontWeight = FontWeight.Bold, modifier = Modifier
+        .fillMaxWidth()
+    )
     val resolutions = listOf("360p", "480p", "720p", "1080p")
     resolutions.forEach { res ->
         SelectableOption(
             label = res,
-            selected = (res == currentRes),
             onClick = { onResSelected(res) },
-            color = contentColor
+            selected = (res == currentRes),
+            modifier = Modifier.testTag("SelectableVideo"),
+            color = contentColor,
         )
     }
 
     Spacer(modifier = Modifier.height(16.dp))
 
-    Text("Qualität:", fontWeight = FontWeight.Bold, modifier = Modifier.fillMaxWidth())
+    Text("Qualität:", fontWeight = FontWeight.Bold, modifier = Modifier
+        .fillMaxWidth()
+        .testTag("ExpertModusAudioOptionen")
+    )
     val qualities = listOf(
         "MP3 128 kBit/s (Standard)",
         "MP3 192 kBit/s (Gut)",
@@ -43,6 +50,7 @@ fun ExpertOptions(
             label = qual,
             selected = (qual == currentQuality),
             onClick = { onQualitySelected(qual) },
+            modifier = Modifier.testTag("SelectableAudio"),
             color = contentColor
         )
     }

@@ -23,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -33,7 +34,8 @@ val ButtonBlue = Color(0xFF1976D2)
 fun ActionButtonsSection(
     currentFormat: String,
     onFormatSelected: (String) -> Unit,
-    onDownloadClick: () -> Unit
+    onDownloadClick: () -> Unit,
+    modifier: Modifier
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
 
@@ -56,6 +58,7 @@ fun ActionButtonsSection(
             // Das aufklappbare Menü
             DropdownMenu(
                 expanded = menuExpanded,
+                modifier = Modifier.testTag("DropdownMenu"),
                 onDismissRequest = { menuExpanded = false }
             ) {
                 // "AVI" entfernt, da es nicht zuverlässig unterstützt wird.
