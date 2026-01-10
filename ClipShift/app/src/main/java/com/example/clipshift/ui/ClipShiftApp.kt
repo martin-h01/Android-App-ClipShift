@@ -176,6 +176,7 @@ fun ClipShiftApp(
                                 onResSelected = { selectedResolution = it },
                                 currentQuality = selectedQuality,
                                 onQualitySelected = { selectedQuality = it },
+                                currentFormat = selectedFormat,
                                 contentColor = contentColor
                             )
                         }
@@ -185,7 +186,7 @@ fun ClipShiftApp(
                         isDarkMode = isDarkMode,
                         onDarkModeChange = { isDarkMode = it },
                         modifier = Modifier
-                            .align(Alignment.BottomEnd) // Jetzt funktioniert die Ausrichtung
+                            .align(Alignment.TopEnd) // Jetzt funktioniert die Ausrichtung
                             .padding(16.dp)             // Abstand zum Rand der Box
                     )
 

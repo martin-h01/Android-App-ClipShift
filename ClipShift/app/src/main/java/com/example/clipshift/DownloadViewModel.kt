@@ -40,7 +40,7 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
                         YoutubeDL.getInstance().updateYoutubeDL(getApplication(), YoutubeDL.UpdateChannel.STABLE)
                         isEngineReady = true
                     } catch (e: Exception) {
-                        handleError(e, finalFilePath, lowerCaseFormat)
+                        handleError(e, finalFilePath, lowerCaseFormat, resolution)
                         return@launch
                     }
                 }
@@ -54,27 +54,36 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
                 if (!targetDir.exists()) {
                     targetDir.mkdirs()
                 }
-                request.addOption("-o", "${targetDir.absolutePath}/%(title)s.%(ext)s")
+
+                val resolutionSuffix = if (lowerCaseFormat == "mp4" && !resolution.isNullOrBlank()) {
+                    "_${resolution}"
+                } else {
+                    ""
+                }
+                request.addOption("-o", "${targetDir.absolutePath}/%(title)s${resolutionSuffix}.%(ext)s")
 
                 val nativeDir = getApplication<Application>().applicationInfo.nativeLibraryDir
                 request.addOption("--ffmpeg-location", "${nativeDir}/libffmpeg.so")
                 request.addOption("--rm-cache-dir")
                 request.addOption("--extractor-args", "youtube:player_client=android")
 
-                // DEINE BEWÄHRTE LOGIK, KORREKT ÜBERSETZT
                 if (lowerCaseFormat == "mp3") {
                     request.addOption("-f", "bestaudio/best")
                     request.addOption("-x")
                     request.addOption("--audio-format", "mp3")
-                } else if (lowerCaseFormat == "mp4" && resolution != null) {
-                    val height = resolution.replace("p", "")
-                    // Dein Befehl, bei dem die Auflösung dynamisch eingesetzt wird.
-                    val formatSelector = "bestvideo[height<=$height][ext=mp4]+bestaudio[ext=m4a]/best[height<=$height][ext=mp4]"
-                    request.addOption("-f", formatSelector)
-                } else {
-                    // Robuster Standard-MP4-Download.
-                   request.addOption("-f", "best[ext=mp4]/bestvideo[ext=m4a]+bestaudio[ext=m4a]")
-
+                } else if (lowerCaseFormat == "mp4") {
+                    if (resolution.isNullOrBlank()) {
+                        // Standard-MP4-Download (Einfacher Modus) in 1080p
+                        val formatSelector = "bestvideo[height<=1080]+bestaudio/best"
+                        request.addOption("-f", formatSelector)
+                        request.addOption("--remux-video", "mp4")
+                    } else {
+                        // Expertenmodus: Auflösung wird übergeben
+                        val height = resolution.replace("p", "")
+                        val formatSelector = "bestvideo[height<=${height}]+bestaudio/best"
+                        request.addOption("-f", formatSelector)
+                        request.addOption("--remux-video", "mp4")
+                    }
                 }
 
                 YoutubeDL.getInstance().execute(request) { progress, _, line ->
@@ -83,10 +92,10 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
                     getFileNameFromLog(line)?.let { finalFilePath = it }
                 }
 
-                renameAndSetSuccess(finalFilePath, lowerCaseFormat)
+                renameAndSetSuccess(finalFilePath, lowerCaseFormat, resolution)
 
             } catch (e: Exception) {
-                handleError(e, finalFilePath, lowerCaseFormat)
+                handleError(e, finalFilePath, lowerCaseFormat, resolution)
             } finally {
                 _isDownloading.value = false
             }
@@ -102,7 +111,7 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    private fun renameAndSetSuccess(filePath: String?, format: String) {
+    private fun renameAndSetSuccess(filePath: String?, format: String, resolution: String?) {
         val file = if (filePath != null) File(filePath) else return
 
         if (format == "mp3" && file.exists() && !file.name.endsWith(".mp3", true)) {
@@ -117,12 +126,12 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    private fun handleError(e: Exception, filePath: String?, format: String) {
+    private fun handleError(e: Exception, filePath: String?, format: String, resolution: String?) {
         val msg = e.message ?: ""
         Log.e("DownloadViewModel", "Download-Fehler", e)
 
         if (msg.contains("ffprobe", true) || msg.contains("Postprocessing", true)) {
-            renameAndSetSuccess(filePath, format)
+            renameAndSetSuccess(filePath, format, resolution)
             _progress.value = 1.0f
             return
         }
