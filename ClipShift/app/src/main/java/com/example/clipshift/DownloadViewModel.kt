@@ -65,7 +65,6 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
                 val nativeDir = getApplication<Application>().applicationInfo.nativeLibraryDir
                 request.addOption("--ffmpeg-location", "${nativeDir}/libffmpeg.so")
                 request.addOption("--rm-cache-dir")
-                request.addOption("--extractor-args", "youtube:player_client=android")
 
                 if (lowerCaseFormat == "mp3") {
                     request.addOption("-f", "bestaudio/best")
@@ -78,11 +77,18 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
                         request.addOption("-f", formatSelector)
                         request.addOption("--remux-video", "mp4")
                     } else {
-                        // Expertenmodus: Auflösung wird übergeben
+//                        // Expertenmodus: Auflösung wird übergeben
                         val height = resolution.replace("p", "")
-                        val formatSelector = "bestvideo[height<=${height}]+bestaudio/best"
-                        request.addOption("-f", formatSelector)
-                        request.addOption("--remux-video", "mp4")
+                        request.addOption(
+                            "-f",
+                            "bv*[ext=mp4][height<=${height}]+ba[ext=m4a]/b"
+                        )
+                        request.addOption(
+                            "-S",
+                            "res:${height},codec:h264,fps,br"
+                        )
+
+                        request.addOption("--merge-output-format", "mp4")
                     }
                 }
 
