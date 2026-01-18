@@ -36,13 +36,14 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
             try {
                 // 1. Initialisierung
                 if (!isEngineReady) {
-                    _statusMsg.value = "Update Engine..."
+                    _statusMsg.value = "Initialisiere..."
                     try {
                         YoutubeDL.getInstance().init(getApplication())
+                        // Update versuchen, Fehler ignorieren (damit Download nicht blockiert wird)
                         YoutubeDL.getInstance().updateYoutubeDL(getApplication(), YoutubeDL.UpdateChannel.STABLE)
                         isEngineReady = true
                     } catch (e: Exception) {
-                        Log.e("DownloadVM", "Init Fehler (ignorierbar)", e)
+                        Log.e("DownloadVM", "Init/Update Fehler", e)
                     }
                 }
 
@@ -55,17 +56,12 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
                 val targetDir = File(baseDir, subDir)
                 if (!targetDir.exists()) targetDir.mkdirs()
 
-                // -----------------------------------------------------------------
-                // DATEINAME GENEIEREN (Mit Suffix für Quali/Auflösung)
-                // -----------------------------------------------------------------
+                // Dateiname
                 var fileNameSuffix = ""
-
                 if (lowerCaseFormat == "mp4" && !resolution.isNullOrBlank()) {
-                    // MP4: Auflösung anhängen (z.B. "_1080p")
                     fileNameSuffix = "_$resolution"
                 }
                 else if (lowerCaseFormat == "mp3" && !audioQuality.isNullOrBlank()) {
-                    // MP3: Bitrate aus dem String filtern (z.B. "_320k")
                     fileNameSuffix = when {
                         audioQuality.contains("320") -> "_320k"
                         audioQuality.contains("256") -> "_256k"
@@ -74,44 +70,44 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
                         else -> ""
                     }
                 }
-
-                // Output-Template setzen: Titel + Suffix + Endung
                 request.addOption("-o", "${targetDir.absolutePath}/%(title)s${fileNameSuffix}.%(ext)s")
 
-
-                // 3. FFmpeg Pfad (Deine 150MB Datei)
+                // 3. FFmpeg Pfad
                 val nativeDir = getApplication<Application>().applicationInfo.nativeLibraryDir
                 request.addOption("--ffmpeg-location", "${nativeDir}/libffmpeg.so")
-                request.addOption("--rm-cache-dir")
 
+                // -----------------------------------------------------------
+                // DER FIX FÜR ECHTE HANDYS (Netzwerk & Zertifikate)
+                // -----------------------------------------------------------
+                request.addOption("--force-ipv4")         // Zwingt IPv4 (umgeht oft Blockaden)
+                request.addOption("--no-check-certificate") // Ignoriert SSL-Probleme auf Handys
+                request.addOption("--rm-cache-dir")       // Löscht alten Müll vor dem Start
+
+                // Wir nutzen wieder den klassischen Android-Client, da er am stabilsten ist,
+                // WENN das Netzwerk (IPv4) stimmt.
+                request.addOption("--extractor-args", "youtube:player_client=android")
 
                 // 4. FORMAT-LOGIK
                 if (lowerCaseFormat == "mp3") {
-                    // --- MP3 ---
                     request.addOption("-x")
                     request.addOption("--audio-format", "mp3")
-                    request.addOption("--prefer-ffmpeg")
                     request.addOption("-f", "bestaudio/best")
 
-                    // Qualität an yt-dlp übergeben
                     val bitrate = when (audioQuality) {
                         "MP3 320 kBit/s (Beste)" -> "320K"
                         "MP3 256 kBit/s (Hoch)" -> "256K"
                         "MP3 192 kBit/s (Gut)" -> "192K"
                         "MP3 128 kBit/s (Standard)" -> "128K"
-                        else -> "192K" // Fallback
+                        else -> "192K"
                     }
                     request.addOption("--audio-quality", bitrate)
 
                 } else if (lowerCaseFormat == "mp4") {
-                    // --- MP4 ---
                     request.addOption("--merge-output-format", "mp4")
 
                     if (resolution.isNullOrBlank()) {
-                        // Einfacher Modus
                         request.addOption("-f", "bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best")
                     } else {
-                        // Expertenmodus
                         val height = resolution.replace("p", "")
                         request.addOption("-f", "bv*[height<=${height}][ext=mp4]+ba[ext=m4a]/b[height<=${height}]/best")
                     }
@@ -146,7 +142,6 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
     private fun renameAndSetSuccess(filePath: String?, format: String) {
         val file = if (filePath != null) File(filePath) else return
 
-        // MP3 Endung sicherstellen
         if (format == "mp3" && file.exists()) {
             val correctName = file.absolutePath.substringBeforeLast(".") + ".mp3"
             val newFile = File(correctName)
@@ -166,6 +161,8 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
             _progress.value = 1.0f
             return
         }
-        _statusMsg.value = "Fehler: ${msg.take(50)}"
+
+        val cleanMsg = msg.replace("WARNING:", "").replace("ERROR:", "")
+        _statusMsg.value = "Fehler: ${cleanMsg.take(60)}"
     }
 }
