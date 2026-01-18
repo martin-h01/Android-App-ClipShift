@@ -1,7 +1,12 @@
 package com.example.clipshift.ui
 
-import android.R
+// WICHTIG: Diese Importe haben gefehlt!
+import android.Manifest
+import android.os.Build
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,7 +42,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-// NEU: Importe für ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.clipshift.DownloadViewModel
 import com.example.clipshift.ui.sections.ActionButtonsSection
@@ -48,41 +52,59 @@ import com.example.clipshift.ui.sections.DarkMode
 
 @Composable
 fun ClipShiftApp(
-    // NEU 1: Wir holen uns hier das ViewModel (das Gehirn der App)
     viewModel: DownloadViewModel = viewModel()
 ) {
+    val context = LocalContext.current
+
     // STATE: Lokaler UI State
     var selectedTab by remember { mutableIntStateOf(0) }
     var urlText by remember { mutableStateOf("") }
 
     // Experten-Einstellungen
     var selectedResolution by remember { mutableStateOf("") }
-    var selectedQuality by remember { mutableStateOf("MP3 192 kBit/s") }
+    var selectedQuality by remember { mutableStateOf("MP3 192 kBit/s") } // Default korrigiert (String muss matchen)
     var selectedFormat by remember { mutableStateOf("MP4") }
 
-    // NEU 2: Wir beobachten die Daten aus dem ViewModel
+    // ViewModel State beobachten
     val statusMsg by viewModel.statusMsg.collectAsState()
     val isDownloading by viewModel.isDownloading.collectAsState()
     val progress by viewModel.progress.collectAsState()
+
+    // Design State
     var isDarkMode by remember { mutableStateOf(false) }
     val backgroundColor = if (isDarkMode) Color.DarkGray else Color.White
     val contentColor = if (isDarkMode) Color.White else Color.Black
     val selectedTextColor = if (isDarkMode) Color.White else Color.Black
     val selectedIconColor = if (isDarkMode) Color(0xFF2196F3) else Color(0xFFFF0000)
 
+    // -------------------------------------------------------------------------
+    // NEU: DER BERECHTIGUNGS-LAUNCHER (Der "Türsteher")
+    // -------------------------------------------------------------------------
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        // Wird aufgerufen, NACHDEM der User "Zulassen" oder "Ablehnen" gedrückt hat
+        val allGranted = permissions.values.all { it }
+        if (allGranted) {
+            // Juhu! Wir dürfen speichern. Download starten!
+            viewModel.startDownload(urlText, selectedFormat, selectedResolution, selectedQuality)
+        } else {
+            Toast.makeText(context, "Ohne Speicherzugriff kein Download möglich!", Toast.LENGTH_LONG).show()
+        }
+    }
+    // -------------------------------------------------------------------------
 
 
-
-    val context = LocalContext.current
-
-    Scaffold(containerColor = backgroundColor , contentColor = contentColor,
+    Scaffold(
+        containerColor = backgroundColor,
+        contentColor = contentColor,
         bottomBar = {
-            NavigationBar(containerColor = backgroundColor , contentColor = contentColor) {
+            NavigationBar(containerColor = backgroundColor, contentColor = contentColor) {
                 NavigationBarItem(
                     selected = selectedTab == 0,
                     onClick = { selectedTab = 0 },
                     label = { Text("Einfacher Modus") },
-                    icon = { Icon(Icons.Default.PlayArrow, contentDescription = null)},
+                    icon = { Icon(Icons.Default.PlayArrow, contentDescription = null) },
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = selectedIconColor,
                         unselectedIconColor = selectedIconColor,
@@ -105,93 +127,107 @@ fun ClipShiftApp(
             }
         }
     ) { innerPadding ->
-                Box(
-                    modifier = Modifier
-                        .padding(innerPadding)
-                        .fillMaxSize()
-                        .background(backgroundColor)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp)
-                            .verticalScroll(rememberScrollState())
-                            .background(backgroundColor),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        LogoSection()
+        Box(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize()
+                .background(backgroundColor)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState())
+                    .background(backgroundColor),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                LogoSection()
 
-                        Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(32.dp))
 
-            // URL Eingabe ist immer sichtbar
-            UrlInputSection(
-                text = urlText,
-                onTextChange = { urlText = it }
-            )
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-            ActionButtonsSection(
-                currentFormat = selectedFormat,
-                onFormatSelected = { selectedFormat = it },
-                onDownloadClick = {
-                    if (urlText.isBlank()) {
-                        Toast.makeText(context, "Bitte erst eine URL eingeben!", Toast.LENGTH_SHORT).show()
-                    } else {
-                        // EXPERTENMODUS: Auflösung und Qualität werden übergeben
-                        viewModel.startDownload(urlText, selectedFormat, selectedResolution, selectedQuality)
-                    }
-                }
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // NEU 4: Status-Anzeige (Ladebalken & Text)
-            if (isDownloading) {
-                LinearProgressIndicator(
-                    progress = { progress },
-                    modifier = Modifier.fillMaxWidth().height(8.dp),
+                UrlInputSection(
+                    text = urlText,
+                    onTextChange = { urlText = it }
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-            }
 
-            // Zeigt: "Bereit", "Update Engine...", "Lade 50%..." oder Fehler
-            Text(
-                text = statusMsg,
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center,
-                color = if (statusMsg.contains("Fehler") || statusMsg.contains("❌"))
-                    MaterialTheme.colorScheme.error
-                else
-                    MaterialTheme.colorScheme.onSurface
-            )
+                Spacer(modifier = Modifier.height(16.dp))
 
-                        if (selectedTab == 1) {
-                            Spacer(modifier = Modifier.height(32.dp))
-                            Divider()
-                            Spacer(modifier = Modifier.height(16.dp))
+                ActionButtonsSection(
+                    currentFormat = selectedFormat,
+                    onFormatSelected = { selectedFormat = it },
+                    onDownloadClick = {
+                        if (urlText.isBlank()) {
+                            Toast.makeText(context, "Bitte erst eine URL eingeben!", Toast.LENGTH_SHORT).show()
+                        } else {
+                            // -------------------------------------------------------------
+                            // ÄNDERUNG: NICHT SOFORT DOWNLOADEN, ERST FRAGEN!
+                            // -------------------------------------------------------------
 
-                            ExpertOptions(
-                                currentRes = selectedResolution,
-                                onResSelected = { selectedResolution = it },
-                                currentQuality = selectedQuality,
-                                onQualitySelected = { selectedQuality = it },
-                                currentFormat = selectedFormat,
-                                contentColor = contentColor
-                            )
+                            val permissionsToRequest = mutableListOf<String>()
+
+                            if (Build.VERSION.SDK_INT >= 33) {
+                                // Android 13, 14, 15 (Video/Audio getrennt)
+                                permissionsToRequest.add(Manifest.permission.READ_MEDIA_VIDEO)
+                                permissionsToRequest.add(Manifest.permission.READ_MEDIA_AUDIO)
+                                permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
+                            } else {
+                                // Android 10, 11, 12 (Klassischer Speicherzugriff)
+                                permissionsToRequest.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                                permissionsToRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+                            }
+
+                            // Startet das System-Popup.
+                            // Wenn User "Ja" sagt, springt der Code oben in "permissionLauncher" rein.
+                            permissionLauncher.launch(permissionsToRequest.toTypedArray())
                         }
                     }
+                )
 
-                    DarkMode(
-                        isDarkMode = isDarkMode,
-                        onDarkModeChange = { isDarkMode = it },
-                        modifier = Modifier
-                            .align(Alignment.TopEnd) // Jetzt funktioniert die Ausrichtung
-                            .padding(16.dp)             // Abstand zum Rand der Box
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Status-Anzeige
+                if (isDownloading) {
+                    LinearProgressIndicator(
+                        progress = { progress },
+                        modifier = Modifier.fillMaxWidth().height(8.dp),
                     )
-
-
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
 
+                Text(
+                    text = statusMsg,
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center,
+                    // Farbe anpassen für DarkMode/LightMode, wenn kein Fehler
+                    color = if (statusMsg.contains("Fehler") || statusMsg.contains("❌"))
+                        MaterialTheme.colorScheme.error
+                    else
+                        contentColor // Nutzt deine dynamische Farbe
+                )
+
+                if (selectedTab == 1) {
+                    Spacer(modifier = Modifier.height(32.dp))
+                    Divider()
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    ExpertOptions(
+                        currentRes = selectedResolution,
+                        onResSelected = { selectedResolution = it },
+                        currentQuality = selectedQuality,
+                        onQualitySelected = { selectedQuality = it },
+                        currentFormat = selectedFormat,
+                        contentColor = contentColor
+                    )
+                }
             }
+
+            DarkMode(
+                isDarkMode = isDarkMode,
+                onDarkModeChange = { isDarkMode = it },
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(16.dp)
+            )
         }
+    }
+}

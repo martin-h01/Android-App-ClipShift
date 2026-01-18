@@ -17,19 +17,19 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // WICHTIG: Nur noch arm64, weil du nur diese Datei hast!
+        // WICHTIG: Deine FFmpeg-Datei ist nur für ARM64.
+        // Das verhindert Abstürze auf falschen Geräten/Emulatoren.
         ndk {
             abiFilters.add("arm64-v8a")
         }
     }
 
-    // --- NEU: ZWINGT GRADLE, DEN ORDNER ZU SEHEN ---
+    // Explizites Einbinden des jniLibs Ordners
     sourceSets {
         getByName("main") {
             jniLibs.srcDirs("src/main/jniLibs")
         }
     }
-    // ------------------------------------------------
 
     buildTypes {
         release {
@@ -51,12 +51,20 @@ android {
         compose = true
     }
 
+    // --- HIER IST DER SCHUTZ FÜR DEINE DATEI ---
     packaging {
         jniLibs {
+            // 1. Zwingt Android, die Datei physisch zu entpacken (nötig für Ausführung)
             useLegacyPackaging = true
+
+            // 2. WICHTIGSTE ZEILE: Verhindert, dass Gradle die Datei "kleinrechnet"
+            // Ohne das hier ist deine 150MB Datei nach dem Build kaputt!
+            keepDebugSymbols.add("**/libffmpeg.so")
+
+            // Konfliktlösung
             pickFirst("lib/*/libpython.zip.so")
             pickFirst("lib/*/libffmpeg.so")
-            pickFirst("**/*.so") // Fängt alles andere sicherheitshalber ab
+            pickFirst("**/*.so")
         }
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -65,10 +73,10 @@ android {
 }
 
 dependencies {
-    // --- Nur die Library, KEIN automatisches FFmpeg ---
+    // Die Basis-Bibliothek (ohne FFmpeg, da wir es manuell haben)
     implementation("io.github.junkfood02.youtubedl-android:library:0.17.1")
 
-    // --- Standard Dependencies ---
+    // Standard Android & Compose Dependencies
     implementation("androidx.core:core-ktx:1.15.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
     implementation("androidx.activity:activity-compose:1.9.3")
