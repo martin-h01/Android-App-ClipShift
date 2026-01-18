@@ -23,36 +23,59 @@ fun ExpertOptions(
     contentColor: Color
 ) {
     when (currentFormat) {
+        // --- MP4: AUFLÖSUNG WÄHLEN ---
         "MP4" -> {
             Text("Auflösung:", fontWeight = FontWeight.Bold, modifier = Modifier.fillMaxWidth())
-            val resolutions = listOf("144p", "240p", "360p", "480p", "720p", "1080p", "1440p", "2160p")
-            Box(modifier = Modifier.height(200.dp)) { // Box mit fester Höhe
-                LazyColumn { // Scrollbare Liste
+
+            val resolutions = listOf("1080p", "720p", "480p", "360p", "240p", "144p")
+
+            Box(modifier = Modifier.height(250.dp)) {
+                LazyColumn {
                     items(resolutions) { res ->
+                        val isSelected = (res == currentRes)
                         SelectableOption(
                             label = res,
-                            selected = (res == currentRes),
-                            onClick = { onResSelected(res) },
+                            selected = isSelected,
+                            onClick = {
+                                // LOGIK FÜR ABWÄHLEN:
+                                if (isSelected) {
+                                    onResSelected("") // Wenn schon gewählt -> Auswahl löschen
+                                } else {
+                                    onResSelected(res) // Sonst -> Auswählen
+                                }
+                            },
                             color = contentColor
                         )
                     }
                 }
             }
         }
+
+        // --- MP3: BITRATE WÄHLEN ---
         "MP3" -> {
             Spacer(modifier = Modifier.height(16.dp))
             Text("Qualität:", fontWeight = FontWeight.Bold, modifier = Modifier.fillMaxWidth())
+
             val qualities = listOf(
-                "MP3 128 kBit/s (Standard)",
-                "MP3 192 kBit/s (Gut)",
                 "MP3 320 kBit/s (Beste)",
-                "FLAC (Verlustfrei)"
+                "MP3 256 kBit/s (Hoch)",
+                "MP3 192 kBit/s (Gut)",
+                "MP3 128 kBit/s (Standard)"
             )
+
             qualities.forEach { qual ->
+                val isSelected = (qual == currentQuality)
                 SelectableOption(
                     label = qual,
-                    selected = (qual == currentQuality),
-                    onClick = { onQualitySelected(qual) },
+                    selected = isSelected,
+                    onClick = {
+                        // LOGIK FÜR ABWÄHLEN:
+                        if (isSelected) {
+                            onQualitySelected("") // Wenn schon gewählt -> Auswahl löschen
+                        } else {
+                            onQualitySelected(qual) // Sonst -> Auswählen
+                        }
+                    },
                     color = contentColor
                 )
             }
