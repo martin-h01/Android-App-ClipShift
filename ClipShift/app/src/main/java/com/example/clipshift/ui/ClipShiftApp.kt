@@ -15,13 +15,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size // Hinzugefügt
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -29,6 +33,9 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -50,6 +57,7 @@ import com.example.clipshift.ui.sections.LogoSection
 import com.example.clipshift.ui.sections.UrlInputSection
 import com.example.clipshift.ui.sections.DarkMode
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ClipShiftApp(
     viewModel: DownloadViewModel = viewModel()
@@ -59,6 +67,7 @@ fun ClipShiftApp(
     // STATE: Lokaler UI State
     var selectedTab by remember { mutableIntStateOf(0) }
     var urlText by remember { mutableStateOf("") }
+    var showInfoDialog by remember { mutableStateOf(false) } // NEU: State für Info-Dialog
 
     // Experten-Einstellungen
     var selectedResolution by remember { mutableStateOf("") }
@@ -98,6 +107,34 @@ fun ClipShiftApp(
     Scaffold(
         containerColor = backgroundColor,
         contentColor = contentColor,
+        topBar = { // NEU: TopAppBar hinzugefügt
+            TopAppBar(
+                title = { }, // Titel entfernt
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = backgroundColor // Hintergrundfarbe anpassen
+                ),
+                navigationIcon = {
+                    IconButton(
+                        onClick = { showInfoDialog = true },
+                        modifier = Modifier.padding(start = 8.dp) // Padding am Start
+                    ) { // Info-Button
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = "Info",
+                            tint = contentColor, // Icon-Farbe anpassen
+                            modifier = Modifier.size(32.dp) // Hinzugefügt: Größe des Icons
+                        )
+                    }
+                },
+                actions = { // DarkMode-Slider in Aktionen verschoben
+                    DarkMode(
+                        isDarkMode = isDarkMode,
+                        onDarkModeChange = { isDarkMode = it },
+                        modifier = Modifier.padding(end = 16.dp) // Optional: Padding anpassen
+                    )
+                }
+            )
+        },
         bottomBar = {
             NavigationBar(containerColor = backgroundColor, contentColor = contentColor) {
                 NavigationBarItem(
@@ -220,13 +257,42 @@ fun ClipShiftApp(
                     )
                 }
             }
+        }
 
-            DarkMode(
-                isDarkMode = isDarkMode,
-                onDarkModeChange = { isDarkMode = it },
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(16.dp)
+        // NEU: Info-Dialog
+        if (showInfoDialog) {
+            AlertDialog(
+                onDismissRequest = { showInfoDialog = false },
+                title = { Text("Über die App", color = contentColor) },
+                text = {
+                    Text(
+                        text = """
+                        Willkommen bei ClipShift!
+                        
+                        Dein All-in-One Downloader für die meisten Social Media Apps:
+                        ✅ YouTube
+                        ✅ Instagram
+                        ✅ Twitter (X)
+                        ... und viele mehr!
+                        
+                        🚀 Einfacher Modus:
+                        Kopiere einfach den Link (egal ob Video, Reel oder Story), füge ihn ein und drücke Download. Die App liefert dir automatisch die beste Qualität.
+                        
+                        🛠️ Experten Modus:
+                        Du willst die volle Kontrolle? Wähle hier manuell zwischen MP4 (Video) und MP3 (Audio). Bestimme selbst die Auflösung (z.B. 1080p) oder die Audio-Bitrate für deine Musik.
+                        
+                        📂 Speicherort:
+                        Deine Downloads landen direkt im Ordner "Downloads/ClipShift" auf deinem Handy.
+                    """.trimIndent(),
+                        color = contentColor
+                    )
+                },
+                confirmButton = {
+                    TextButton(onClick = { showInfoDialog = false }) {
+                        Text("Schließen", color = selectedIconColor)
+                    }
+                },
+                containerColor = backgroundColor
             )
         }
     }
