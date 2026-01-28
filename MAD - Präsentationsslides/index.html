@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>ClipShift - Technical Presentation</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/dist/reveal.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/dist/theme/black.css" id="theme">
+
+    <style>
+        :root {
+            --blue: #4a90e2;
+            --green: #50c878;
+        }
+        .reveal { font-size: 28px; }
+        .reveal h1 { font-size: 2.2em; color: var(--blue); margin-top: 50px; }
+        .reveal h2 { font-size: 1.4em; color: var(--blue); margin-bottom: 25px; border-bottom: 1px solid #444; display: inline-block; padding-bottom: 5px; }
+        .reveal h3 { font-size: 1.0em; color: var(--green); }
+        .reveal p, .reveal li { font-size: 0.8em; line-height: 1.3; }
+        
+        .text-left { text-align: left; }
+        
+        .ui-gallery {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .ui-gallery img {
+            max-height: 380px !important;
+            border-radius: 10px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.6);
+            border: 1px solid #333;
+        }
+
+        .code-box { 
+            background: #111; 
+            padding: 20px; 
+            border-radius: 8px; 
+            font-family: 'Courier New', monospace; 
+            font-size: 0.6em !important; 
+            border-left: 5px solid var(--green); 
+            color: #efefef;
+            text-align: left;
+            margin: 20px 0;
+        }
+        
+        .highlight { color: var(--green); font-weight: bold; }
+        .badge { background: var(--blue); color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.5em; vertical-align: middle; }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+
+            <section>
+                <h1 style="margin-top: 100px;">ClipShift</h1>
+                <p>Medien-Konvertierung ohne Kompromisse</p>
+                <hr style="width: 20%; border-color: var(--blue);">
+                <p style="font-size: 0.6em; opacity: 0.5;">Softwareprojekt • 2026</p>
+            </section>
+
+            <section>
+                <h2>Die Agenda</h2>
+                <div style="display: flex; justify-content: space-around;">
+                    <ul class="text-left" style="list-style-type: none;">
+                        <li><span class="highlight">1.</span> Motivation & Problem</li>
+                        <li><span class="highlight">2.</span> Die ClipShift-Lösung</li>
+                        <li><span class="highlight">3.</span> Technischer Workflow</li>
+                        <li><span class="highlight">4.</span> Kern-Technologien</li>
+                    </ul>
+                    <ul class="text-left" style="list-style-type: none;">
+                        <li><span class="highlight">5.</span> UI/UX Design & Showcase</li>
+                        <li><span class="highlight">6.</span> Hürden: CLI & FFmpeg</li>
+                        <li><span class="highlight">7.</span> Lessons Learned</li>
+                        <li><span class="highlight">8.</span> Quellcode & Demo</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section>
+                <h2>1. Motivation</h2>
+                <div class="text-left">
+                    <p>Wieso haben wir uns für eine eigene App entschieden?</p>
+                    <ul>
+                        <li><span class="highlight">Sicherheit:</span> Umgehung von Ad-Ware auf Online-Portalen.</li>
+                        <li><span class="highlight">Flexibilität:</span> Unterstützung für Audio (Podcasts) & Video.</li>
+                        <li><span class="highlight">Privatsphäre:</span> Lokale Verarbeitung der Datenströme.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section>
+                <h2>2. Die ClipShift-Lösung</h2>
+                <div class="text-left">
+                    <p>Was macht ClipShift anders?</p>
+                    <ul>
+                        <li>Vereinigung von <span class="highlight">CLI-Power</span> und grafischer Einfachheit.</li>
+                        <li>Vorkonfigurierte Profile für die gängigsten Anwendungsfälle.</li>
+                        <li>Keine künstlichen Speed-Limits oder Dateigrößen-Beschränkungen.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section>
+                <h2>3. Technischer Workflow</h2>
+                <div class="code-box">
+                    [Eingabe URL] -> Analyse (yt-dlp) <br>
+                    &nbsp;&nbsp; -> Auswahl Streams (Video/Audio getrennt) <br>
+                    &nbsp;&nbsp; -> Download der Fragmente <br>
+                    &nbsp;&nbsp; -> Muxing (FFmpeg Integration) <br>
+                    [Output Datei]
+                </div>
+                <p style="font-size: 0.6em;">Abstraktion der komplexen CLI-Befehle für den Endnutzer.</p>
+            </section>
+
+            <section>
+                <h2>4. Das Power-Duo</h2>
+                <div style="display: flex; gap: 40px;" class="text-left">
+                    <div style="flex: 1;">
+                        <h3>yt-dlp <span class="badge">Engine</span></h3>
+                        <p style="font-size: 0.7em;">Extraktion von Metadaten und Download der Rohdaten von über 1000 Plattformen.</p>
+                    </div>
+                    <div style="flex: 1;">
+                        <h3>FFmpeg <span class="badge">Processor</span></h3>
+                        <p style="font-size: 0.7em;">Das "Messer" für Medien: Schneiden, Mergen und Konvertieren der Datenströme.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h2>5. UI-Design & Showcase</h2>
+                <p style="font-size: 0.7em;">Ein Interface für zwei Zielgruppen: Einsteiger und Experten.</p>
+                <div class="ui-gallery">
+                    <img src="image2.png" alt="Einfacher Modus">
+                    <img src="image1.png" alt="Dark Mode Design">
+                    <img src="image0.png" alt="Experten Modus">
+                </div>
+            </section>
+
+            <section>
+                <h2>6. Hürden & Herausforderungen</h2>
+                <div class="text-left">
+                    <ul>
+                        <li><span class="highlight">yt-dlp Syntax:</span> Die Suche nach den optimalen CLI-Flags für Qualität und Format-Merging war extrem zeitaufwendig.</li>
+                        <li><span class="highlight">FFmpeg Integration:</span> Zwingende Notwendigkeit zum Zusammenführen von getrennten Audio- und Videospuren (Muxing).</li>
+                        <li><span class="highlight">Dependency Management:</span> Sicherstellung, dass FFmpeg systemweit erreichbar ist.</li>
+                    </ul>
+                </div>
+                <div class="code-box" style="font-size: 0.5em !important;">
+                    # Beispiel für komplexe Logik:
+                    yt-dlp -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]" --merge-output-format mp4
+                </div>
+            </section>
+
+            <section>
+                <h2>7. Key Learnings</h2>
+                <div class="text-left">
+                    <ul>
+                        <li><span class="highlight">Asynchronität:</span> Essentiell für flüssige UIs bei rechenintensiven Prozessen.</li>
+                        <li><span class="highlight">Dokumentation:</span> Tiefes Verständnis von CLI-Wrappern und Prozess-Handling gewonnen.</li>
+                        <li><span class="highlight">Transcoding:</span> Verständnis für Medien-Container und Codecs geschärft.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section>
+                <h2 style="color: var(--green);">8. Und nun zum Code</h2>
+                <p>Genug der Theorie – schauen wir uns die Implementierung live an.</p>
+                <div class="code-box">
+                    // Beispiel: Prozess-Steuerung im Hintergrund
+                    const downloader = spawn('yt-dlp', commands);
+                </div>
+                <hr style="width: 10%; margin-top: 50px; opacity: 0.3;">
+                <p style="font-size: 0.9em; font-weight: bold;">Live-Demo & Fragen</p>
+            </section>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/dist/reveal.js"></script>
+    <script>
+        Reveal.initialize({
+            controls: true,
+            progress: true,
+            center: true,
+            hash: true,
+            transition: 'slide'
+        });
+    </script>
+</body>
+</html>
