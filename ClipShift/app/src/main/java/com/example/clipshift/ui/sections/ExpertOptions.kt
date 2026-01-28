@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
@@ -23,7 +24,7 @@ fun ExpertOptions(
     currentQuality: String,
     onQualitySelected: (String) -> Unit,
     currentFormat: String,
-    contentColor: Color
+    contentColor: Color,
 ) {
     when (currentFormat) {
         /**
@@ -63,7 +64,10 @@ fun ExpertOptions(
          */
         "MP3" -> {
             Spacer(modifier = Modifier.height(16.dp))
-            Text("Qualität:", fontWeight = FontWeight.Bold, modifier = Modifier.fillMaxWidth())
+            Text("Qualität:", fontWeight = FontWeight.Bold, modifier = Modifier
+        .fillMaxWidth()
+        .testTag("ExpertModusAudioOptionen")
+    )
 
             val qualities = listOf(
                 "MP3 320 kBit/s (Beste)",
@@ -87,6 +91,7 @@ fun ExpertOptions(
                             onQualitySelected(qual) // otherwise -> select
                         }
                     },
+            modifier = Modifier.testTag("SelectableAudio"),
                     color = contentColor
                 )
             }

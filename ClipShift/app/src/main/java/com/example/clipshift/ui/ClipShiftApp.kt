@@ -47,6 +47,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -167,6 +170,7 @@ fun ClipShiftApp(
                     selected = selectedTab == 1,
                     onClick = { selectedTab = 1 },
                     label = { Text("Experten Modus") },
+                    modifier = Modifier.testTag("ExpertModus"),
                     icon = { Icon(Icons.Default.Info, contentDescription = null) },
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = selectedIconColor,
@@ -186,7 +190,11 @@ fun ClipShiftApp(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
-                .background(backgroundColor)
+                .testTag("MainContent")
+                        .semantics{
+                            contentDescription = if (isDarkMode) "dark" else "light"
+                        }
+                        .background(backgroundColor)
         ) {
             Column(
                 modifier = Modifier
@@ -202,15 +210,16 @@ fun ClipShiftApp(
 
                 UrlInputSection(
                     text = urlText,
-                    onTextChange = { urlText = it }
-                )
+                    onTextChange = { urlText = it },
+                modifier = Modifier.testTag("UrlInput")
+            )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 ActionButtonsSection(
                     currentFormat = selectedFormat,
                     onFormatSelected = { selectedFormat = it },
-                    onDownloadClick = {
+                    modifier = Modifier.testTag("DownloadButton"),onDownloadClick = {
                         if (urlText.isBlank()) {
                             Toast.makeText(context, "Bitte erst eine URL eingeben!", Toast.LENGTH_SHORT).show()
                         } else {
@@ -259,7 +268,7 @@ fun ClipShiftApp(
                     text = statusMsg,
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center,
-                    color = if (statusMsg.contains("Fehler") || statusMsg.contains("❌"))
+                    modifier = Modifier.testTag("TextOutput"),color = if (statusMsg.contains("Fehler") || statusMsg.contains("❌"))
                         MaterialTheme.colorScheme.error
                     else
                         contentColor

@@ -17,7 +17,13 @@ import androidx.compose.ui.unit.dp
  * Bottom bar options for either easy mode or expert mode
  */
 @Composable
-fun SelectableOption(label: String, selected: Boolean, onClick: () -> Unit, color: Color) {
+fun SelectableOption(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    color: Color,
+    modifier: Modifier
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
