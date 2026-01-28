@@ -1,7 +1,5 @@
 package com.example.clipshift
 
-import androidx.compose.ui.test.MainTestClock
-import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertContentDescriptionEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
@@ -12,16 +10,20 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
-import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
 import org.junit.Rule
 import org.junit.Test
 
+/**
+ * UI Tests to test functions
+ */
 class DownloadTest {
     @get:Rule
     var composeTestRule = createAndroidComposeRule<MainActivity>()
 
-    //Mp3 auswählen und youtube-link eingeben, danach runterladen
+    /**
+     * Tests the dropown menu, URL input and download function by selecting MP3 and converting a video
+     */
     @Test
     fun test1(){
         composeTestRule.onNodeWithText("MP4").assertIsDisplayed()
@@ -39,7 +41,9 @@ class DownloadTest {
         composeTestRule.onNodeWithTag("TextOutput").assertTextEquals("✅ Fertig! (Umbenannt zu MP3)")
     }
 
-    //Darkmode an und ausmachen und danach auf Darkmode bleiben
+    /**
+     * Checks the functionality of the Dark mode button
+     */
     @Test
     fun test2(){
         composeTestRule.onNodeWithTag("MainContent").assertContentDescriptionEquals("light")
@@ -52,7 +56,9 @@ class DownloadTest {
 
     }
 
-    //Expertenmodus testen, Auflösung wählen, audio qualität auswählen und youtube-link eingeben, danach runterladen
+    /**
+     * Tests the Expert mode by selecting MP4, selecting a resolution and converting a video
+     */
     @Test
     fun test3(){
         composeTestRule.onNodeWithTag("ExpertModus").performClick()

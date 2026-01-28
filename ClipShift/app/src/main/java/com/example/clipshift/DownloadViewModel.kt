@@ -39,7 +39,6 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
             try {
                 /**
                  * Initialising of ytdlp
-
                  */
                 if (!isEngineReady) {
                     _statusMsg.value = "Initialisiere..."

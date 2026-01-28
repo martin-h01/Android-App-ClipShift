@@ -42,6 +42,7 @@ fun ExpertOptions(
                         SelectableOption(
                             label = res,
                             selected = isSelected,
+                            modifier = Modifier.testTag("SelectableVideo"),
                             onClick = {
                                 /**
                                  * Logic for selecting and deselecting of options
