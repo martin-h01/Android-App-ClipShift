@@ -64,77 +64,91 @@ fun ClipShiftApp(
 ) {
     val context = LocalContext.current
 
-    // STATE: Lokaler UI State
+    /**
+     * State of the bottom bar menu
+     */
     var selectedTab by remember { mutableIntStateOf(0) }
     var urlText by remember { mutableStateOf("") }
-    var showInfoDialog by remember { mutableStateOf(false) } // NEU: State für Info-Dialog
+    var showInfoDialog by remember { mutableStateOf(false) }
 
-    // Experten-Einstellungen
+    /**
+     * State of the expert mode
+     */
     var selectedResolution by remember { mutableStateOf("") }
-    var selectedQuality by remember { mutableStateOf("MP3 192 kBit/s") } // Default korrigiert (String muss matchen)
+    var selectedQuality by remember { mutableStateOf("MP3 192 kBit/s") }
     var selectedFormat by remember { mutableStateOf("MP4") }
 
-    // ViewModel State beobachten
+    /**
+     * State of the view model
+     */
     val statusMsg by viewModel.statusMsg.collectAsState()
     val isDownloading by viewModel.isDownloading.collectAsState()
     val progress by viewModel.progress.collectAsState()
 
-    // Design State
+    /**
+     * State of the UI
+     */
     var isDarkMode by remember { mutableStateOf(false) }
     val backgroundColor = if (isDarkMode) Color.DarkGray else Color.White
     val contentColor = if (isDarkMode) Color.White else Color.Black
     val selectedTextColor = if (isDarkMode) Color.White else Color.Black
     val selectedIconColor = if (isDarkMode) Color(0xFF2196F3) else Color(0xFFFF0000)
 
-    // -------------------------------------------------------------------------
-    // NEU: DER BERECHTIGUNGS-LAUNCHER (Der "Türsteher")
-    // -------------------------------------------------------------------------
+    /**
+     * Permission handling
+     */
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
-        // Wird aufgerufen, NACHDEM der User "Zulassen" oder "Ablehnen" gedrückt hat
+        // Check if all permissions are granted
         val allGranted = permissions.values.all { it }
         if (allGranted) {
-            // Juhu! Wir dürfen speichern. Download starten!
+            // if all are granted start download
             viewModel.startDownload(urlText, selectedFormat, selectedResolution, selectedQuality)
         } else {
+            // if not granted, show message
             Toast.makeText(context, "Ohne Speicherzugriff kein Download möglich!", Toast.LENGTH_LONG).show()
         }
     }
-    // -------------------------------------------------------------------------
 
-
+    /**
+     * Top bar for info button and dark mode
+     */
     Scaffold(
         containerColor = backgroundColor,
         contentColor = contentColor,
-        topBar = { // NEU: TopAppBar hinzugefügt
+        topBar = {
             TopAppBar(
-                title = { }, // Titel entfernt
+                title = { },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = backgroundColor // Hintergrundfarbe anpassen
+                    containerColor = backgroundColor
                 ),
                 navigationIcon = {
                     IconButton(
                         onClick = { showInfoDialog = true },
-                        modifier = Modifier.padding(start = 8.dp) // Padding am Start
+                        modifier = Modifier.padding(start = 8.dp)
                     ) { // Info-Button
                         Icon(
                             imageVector = Icons.Default.Info,
                             contentDescription = "Info",
-                            tint = contentColor, // Icon-Farbe anpassen
-                            modifier = Modifier.size(32.dp) // Hinzugefügt: Größe des Icons
+                            tint = contentColor,
+                            modifier = Modifier.size(32.dp)
                         )
                     }
                 },
-                actions = { // DarkMode-Slider in Aktionen verschoben
+                actions = {
                     DarkMode(
                         isDarkMode = isDarkMode,
                         onDarkModeChange = { isDarkMode = it },
-                        modifier = Modifier.padding(end = 16.dp) // Optional: Padding anpassen
+                        modifier = Modifier.padding(end = 16.dp)
                     )
                 }
             )
         },
+
+        /**
+         * Bottom bar with easy mode and expert mode
+         */
         bottomBar = {
             NavigationBar(containerColor = backgroundColor, contentColor = contentColor) {
                 NavigationBarItem(
@@ -163,6 +177,10 @@ fun ClipShiftApp(
                 )
             }
         }
+
+        /**
+         * Middle Section with Url input and the action buttons
+         */
     ) { innerPadding ->
         Box(
             modifier = Modifier
@@ -196,25 +214,29 @@ fun ClipShiftApp(
                         if (urlText.isBlank()) {
                             Toast.makeText(context, "Bitte erst eine URL eingeben!", Toast.LENGTH_SHORT).show()
                         } else {
-                            // -------------------------------------------------------------
-                            // ÄNDERUNG: NICHT SOFORT DOWNLOADEN, ERST FRAGEN!
-                            // -------------------------------------------------------------
 
+                            /**
+                             * Permission check
+                             */
                             val permissionsToRequest = mutableListOf<String>()
 
+                            /**
+                             * Different permission based on Android version
+                             */
                             if (Build.VERSION.SDK_INT >= 33) {
-                                // Android 13, 14, 15 (Video/Audio getrennt)
+                                // Android 13, 14, 15
                                 permissionsToRequest.add(Manifest.permission.READ_MEDIA_VIDEO)
                                 permissionsToRequest.add(Manifest.permission.READ_MEDIA_AUDIO)
                                 permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
                             } else {
-                                // Android 10, 11, 12 (Klassischer Speicherzugriff)
+                                // Android 10, 11, 12
                                 permissionsToRequest.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                                 permissionsToRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE)
                             }
 
-                            // Startet das System-Popup.
-                            // Wenn User "Ja" sagt, springt der Code oben in "permissionLauncher" rein.
+                            /**
+                             * Pop to ask for permissions
+                             */
                             permissionLauncher.launch(permissionsToRequest.toTypedArray())
                         }
                     }
@@ -222,7 +244,9 @@ fun ClipShiftApp(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Status-Anzeige
+                /**
+                 * Progressbar to show progress of conversion
+                 */
                 if (isDownloading) {
                     LinearProgressIndicator(
                         progress = { progress },
@@ -235,11 +259,10 @@ fun ClipShiftApp(
                     text = statusMsg,
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center,
-                    // Farbe anpassen für DarkMode/LightMode, wenn kein Fehler
                     color = if (statusMsg.contains("Fehler") || statusMsg.contains("❌"))
                         MaterialTheme.colorScheme.error
                     else
-                        contentColor // Nutzt deine dynamische Farbe
+                        contentColor
                 )
 
                 if (selectedTab == 1) {
@@ -259,7 +282,9 @@ fun ClipShiftApp(
             }
         }
 
-        // NEU: Info-Dialog
+        /**
+         * Text for the Info button to give user a explanation of the App
+         */
         if (showInfoDialog) {
             AlertDialog(
                 onDismissRequest = { showInfoDialog = false },

@@ -13,6 +13,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
+/**
+ * Section for the Expert Mode with various options
+ */
 @Composable
 fun ExpertOptions(
     currentRes: String,
@@ -23,7 +26,9 @@ fun ExpertOptions(
     contentColor: Color
 ) {
     when (currentFormat) {
-        // --- MP4: AUFLÖSUNG WÄHLEN ---
+        /**
+         * List of MP4 resolutions to select from
+         */
         "MP4" -> {
             Text("Auflösung:", fontWeight = FontWeight.Bold, modifier = Modifier.fillMaxWidth())
 
@@ -37,11 +42,13 @@ fun ExpertOptions(
                             label = res,
                             selected = isSelected,
                             onClick = {
-                                // LOGIK FÜR ABWÄHLEN:
+                                /**
+                                 * Logic for selecting and deselecting of options
+                                 */
                                 if (isSelected) {
-                                    onResSelected("") // Wenn schon gewählt -> Auswahl löschen
+                                    onResSelected("") // if already selected -> delete selection
                                 } else {
-                                    onResSelected(res) // Sonst -> Auswählen
+                                    onResSelected(res) // otherwise -> select
                                 }
                             },
                             color = contentColor
@@ -51,7 +58,9 @@ fun ExpertOptions(
             }
         }
 
-        // --- MP3: BITRATE WÄHLEN ---
+        /**
+         * List of MP3 qualities to select from
+         */
         "MP3" -> {
             Spacer(modifier = Modifier.height(16.dp))
             Text("Qualität:", fontWeight = FontWeight.Bold, modifier = Modifier.fillMaxWidth())
@@ -69,11 +78,13 @@ fun ExpertOptions(
                     label = qual,
                     selected = isSelected,
                     onClick = {
-                        // LOGIK FÜR ABWÄHLEN:
+                        /**
+                         * Logic for selecting and deselecting of options
+                         */
                         if (isSelected) {
-                            onQualitySelected("") // Wenn schon gewählt -> Auswahl löschen
+                            onQualitySelected("") // if already selected -> delete selection
                         } else {
-                            onQualitySelected(qual) // Sonst -> Auswählen
+                            onQualitySelected(qual) // otherwise -> select
                         }
                     },
                     color = contentColor

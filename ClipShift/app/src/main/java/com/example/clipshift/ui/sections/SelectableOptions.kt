@@ -13,7 +13,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
-
+/**
+ * Bottom bar options for either easy mode or expert mode
+ */
 @Composable
 fun SelectableOption(label: String, selected: Boolean, onClick: () -> Unit, color: Color) {
     Row(

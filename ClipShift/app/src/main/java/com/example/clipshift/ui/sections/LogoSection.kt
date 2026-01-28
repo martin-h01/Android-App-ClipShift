@@ -23,16 +23,21 @@ import com.example.clipshift.R
 val ClipShiftBlue = Color(0xFF0056D2)
 val ClipShiftGreen = Color(0xFF4CAF50)
 
+/**
+ * Section with the ClipShift Logo
+ */
 @Composable
 fun LogoSection() {
     Box(contentAlignment = Alignment.Center, modifier = Modifier.size(180.dp)) {
-        // Hier wird jetzt das echte Bild geladen
+        /**
+         * Laoding image file of the ClipShift Logo
+         */
         Image(
-            painter = painterResource(id = R.drawable.clipshift_logo), // Der Name muss exakt deiner Datei entsprechen (ohne .png)
+            painter = painterResource(id = R.drawable.clipshift_logo),
             contentDescription = "ClipShift Logo",
             modifier = Modifier
                 .size(180.dp)
-                .clip(CircleShape) // Schneidet das Bild rund aus, falls es Ecken hat
+                .clip(CircleShape)
         )
     }
     Spacer(modifier = Modifier.height(16.dp))

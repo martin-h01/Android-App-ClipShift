@@ -26,6 +26,9 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
 
     private var isEngineReady = false
 
+    /**
+     * Handling of download with the different parameters
+     */
     fun startDownload(url: String, format: String, resolution: String?, audioQuality: String?) {
         viewModelScope.launch(Dispatchers.IO) {
             _isDownloading.value = true
@@ -34,7 +37,10 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
             val lowerCaseFormat = format.lowercase().trim()
 
             try {
-                // 1. Initialisierung
+                /**
+                 * Initialising of ytdlp
+
+                 */
                 if (!isEngineReady) {
                     _statusMsg.value = "Initialisiere..."
                     try {
@@ -50,13 +56,17 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
                 _statusMsg.value = "Starte Download..."
                 val request = YoutubeDLRequest(url)
 
-                // 2. Speicherort
+                /**
+                 * Setting of the download folder
+                 */
                 val baseDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
                 val subDir = if (lowerCaseFormat == "mp3") "ClipShift-Audio" else "ClipShift-Video"
                 val targetDir = File(baseDir, subDir)
                 if (!targetDir.exists()) targetDir.mkdirs()
 
-                // Dateiname
+                /**
+                 * Setting of the file name
+                 */
                 var fileNameSuffix = ""
                 if (lowerCaseFormat == "mp4" && !resolution.isNullOrBlank()) {
                     fileNameSuffix = "_$resolution"
@@ -72,22 +82,25 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
                 }
                 request.addOption("-o", "${targetDir.absolutePath}/%(title)s${fileNameSuffix}.%(ext)s")
 
-                // 3. FFmpeg Pfad
+                /**
+                 * Path for ffmpeg, which is required for mp4 conversion
+                 */
                 val nativeDir = getApplication<Application>().applicationInfo.nativeLibraryDir
                 request.addOption("--ffmpeg-location", "${nativeDir}/libffmpeg.so")
 
-                // -----------------------------------------------------------
-                // DER FIX FÜR ECHTE HANDYS (Netzwerk & Zertifikate)
-                // -----------------------------------------------------------
-                request.addOption("--force-ipv4")         // Zwingt IPv4 (umgeht oft Blockaden)
-                request.addOption("--no-check-certificate") // Ignoriert SSL-Probleme auf Handys
-                request.addOption("--rm-cache-dir")       // Löscht alten Müll vor dem Start
-
-                // Wir nutzen wieder den klassischen Android-Client, da er am stabilsten ist,
-                // WENN das Netzwerk (IPv4) stimmt.
+                /**
+                 * options for ytdlp to setup the process
+                 */
+                request.addOption("--force-ipv4")         // forces ipv4
+                request.addOption("--no-check-certificate") // ignores SSl for mobile devices
+                request.addOption("--force-overwrites")    // overwrites files with the same name
+                request.addOption("--no-playlist")         // no downloading of playlists
+                request.addOption("--rm-cache-dir")       // clear cache
                 request.addOption("--extractor-args", "youtube:player_client=android")
 
-                // 4. FORMAT-LOGIK
+                /**
+                 * Logic for setting selected Mp4 and Mp3 settings
+                 */
                 if (lowerCaseFormat == "mp3") {
                     request.addOption("-x")
                     request.addOption("--audio-format", "mp3")
@@ -113,7 +126,9 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
                     }
                 }
 
-                // 5. Ausführen
+                /**
+                 * Gives ytdlp the commands and starts the download
+                 */
                 YoutubeDL.getInstance().execute(request) { progress, _, line ->
                     _progress.value = progress / 100f
                     _statusMsg.value = "Lade... ${progress.toInt()}%"
@@ -152,6 +167,9 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
         _statusMsg.value = "✅ Fertig!"
     }
 
+    /**
+     * Error handling
+     */
     private fun handleError(e: Exception, filePath: String?) {
         val msg = e.message ?: ""
         Log.e("DownloadViewModel", "Fehler", e)

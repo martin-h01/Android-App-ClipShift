@@ -29,6 +29,9 @@ import androidx.compose.ui.unit.sp
 val ButtonRed = Color(0xFFD32F2F)
 val ButtonBlue = Color(0xFF1976D2)
 
+/**
+ * Section with Dropdown menu and button to start converting
+ */
 @Composable
 fun ActionButtonsSection(
     currentFormat: String,
@@ -38,7 +41,9 @@ fun ActionButtonsSection(
     var menuExpanded by remember { mutableStateOf(false) }
 
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        // Dropdown Button
+        /**
+         * Button for the dropdown menu for selecting format.
+         */
         Box(modifier = Modifier.weight(1f)) {
             Button(
                 onClick = { menuExpanded = true },
@@ -48,17 +53,24 @@ fun ActionButtonsSection(
                     .fillMaxWidth()
                     .height(50.dp)
             ) {
-                Text(currentFormat, fontSize = 16.sp) // Zeigt aktuelles Format an
+                /**
+                 * Shows currently selected Format
+                 */
+                Text(currentFormat, fontSize = 16.sp)
                 Spacer(modifier = Modifier.width(4.dp))
                 Icon(Icons.Default.ArrowDropDown, contentDescription = null)
             }
 
-            // Das aufklappbare Menü
+            /**
+             * The dropdown enu itself
+             */
             DropdownMenu(
                 expanded = menuExpanded,
                 onDismissRequest = { menuExpanded = false }
             ) {
-                // Liste auswählabrer Dateiformate
+                /**
+                 * List of available formats
+                 */
                 listOf("MP4", "MP3" ).forEach { format ->
                     DropdownMenuItem(
                         text = { Text(format) },
@@ -71,7 +83,9 @@ fun ActionButtonsSection(
             }
         }
 
-        // OK Button
+        /**
+         * "Ok" Button to start the converting process
+         */
         Button(
             onClick = onDownloadClick,
             colors = ButtonDefaults.buttonColors(containerColor = ButtonRed),

@@ -9,6 +9,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 
+/**
+ * Button to switch between dark and light mode
+ */
 @Composable
 fun DarkMode(isDarkMode: Boolean,
              onDarkModeChange: (Boolean) -> Unit,
