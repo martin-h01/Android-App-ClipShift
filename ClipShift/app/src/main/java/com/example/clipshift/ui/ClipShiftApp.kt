@@ -127,7 +127,9 @@ fun ClipShiftApp(
                 navigationIcon = {
                     IconButton(
                         onClick = { showInfoDialog = true },
-                        modifier = Modifier.padding(start = 8.dp)
+                        modifier = Modifier
+                            .padding(start = 8.dp)
+                            .testTag("InfoButton")
                     ) {
                         Icon(
                             imageVector = Icons.Default.Info,
@@ -141,7 +143,9 @@ fun ClipShiftApp(
                     DarkMode(
                         isDarkMode = isDarkMode,
                         onDarkModeChange = { isDarkMode = it },
-                        modifier = Modifier.padding(end = 16.dp)
+                        modifier = Modifier
+                            .padding(end = 16.dp)
+                            .testTag("DarkModeButton")
                     )
                 }
             )

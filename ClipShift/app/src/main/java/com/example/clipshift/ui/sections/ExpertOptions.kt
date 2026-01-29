@@ -36,13 +36,13 @@ fun ExpertOptions(
             val resolutions = listOf("1080p", "720p", "480p", "360p", "240p", "144p")
 
             Box(modifier = Modifier.height(250.dp)) {
-                LazyColumn {
+                LazyColumn(modifier = Modifier.testTag("SelectableVideo")) {
                     items(resolutions) { res ->
                         val isSelected = (res == currentRes)
                         SelectableOption(
                             label = res,
                             selected = isSelected,
-                            modifier = Modifier.testTag("SelectableVideo"),
+                            modifier = Modifier,
                             onClick = {
                                 /**
                                  * Logic for selecting and deselecting of options
