@@ -1,3 +1,10 @@
+# Team Members & Category
+Martin Herdt (mh370)
+Emanuel Schulz (es174)
+Yusuf Boylu (yb028)
+
+Networking & Media
+
 # ClipShift
 
 ClipShift ist eine Android-App zum Herunterladen und Konvertieren von Videos und Audios aus verschiedenen Online-Plattformen (z. B. YouTube).  
