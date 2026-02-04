@@ -28,12 +28,12 @@ fun SelectableOption(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick) // Klickbar machen!
+            .clickable(onClick = onClick)
             .padding(vertical = 4.dp)
     ) {
         RadioButton(
             selected = selected,
-            onClick = onClick, // Auch der Radiobutton selbst reagiert
+            onClick = onClick,
             colors = RadioButtonDefaults.colors(unselectedColor = color, selectedColor = color)
         )
         Text(text = label, modifier = Modifier.padding(start = 8.dp))
