@@ -1,14 +1,30 @@
 <resources>
     <string name="app_name">ClipShift</string>
     <string name="info_button_text">Info</string>
+
     <string name="simple_mode">Einfacher Modus</string>
-    <string name="expert_mode">Expertenmodus</string>
+    <string name="expert_mode">Experten Modus</string>
+
     <string name="resolution">Auflösung</string>
     <string name="quality">Qualität</string>
-    <string name="language_switch_button">Switch Language</string>
-    <string name="about_app_title">Über die App</string>
-    <string name="about_app_text">Willkommen bei ClipShift!\n\nDein All-in-One Downloader für die meisten Social Media Apps:\n✅ YouTube\n✅ Instagram\n✅ Twitter (X)\n... und viele mehr!\n\n🚀 Einfacher Modus:\nKopiere einfach den Link (egal ob Video, Reel oder Story), füge ihn ein und drücke Download. Die App liefert dir automatisch die beste Qualität.\n\n🛠️ Experten Modus:\nDu willst die volle Kontrolle? Wähle hier manuell zwischen MP4 (Video) und MP3 (Audio). Bestimme selbst die Auflösung (z.B. 1080p) oder die Audio-Bitrate für deine Musik.\n\n📂 Speicherort:\nDeine Downloads landen direkt im Ordner \"Downloads/ClipShift\" auf deinem Handy.</string>
+
+    <string name="quality_best">Beste</string>
+    <string name="quality_high">Hoch</string>
+    <string name="quality_good">Gut</string>
+    <string name="quality_standard">Standard</string>
+
+    <string name="about_app_title">Über ClipShift</string>
+    <string name="about_app_text">Willkommen bei ClipShift!\n\nDein Downloader für:\n✅ YouTube\n✅ Instagram\n✅ Twitter (X)\n... und mehr!\n\n🚀 Einfacher Modus:\nLink einfügen, Download drücken. Automatisch beste Qualität.\n\n🛠️ Experten Modus:\nVolle Kontrolle. Wähle MP4-Auflösung oder MP3-Bitrate manuell.\n\n📂 Speicherort:\nDateien landen in "Downloads/ClipShift".</string>
     <string name="close_button">Schließen</string>
+
     <string name="no_storage_permission">Ohne Speicherzugriff kein Download möglich!</string>
     <string name="please_enter_url">Bitte erst eine URL eingeben!</string>
+
+        <string name="status_ready">Bereit</string>
+        <string name="status_init">Initialisiere...</string>
+        <string name="status_start">Starte Download...</string>
+        <string name="status_loading">Lade... %1$d%%</string>
+        <string name="status_done">✅ Fertig!</string>
+        <string name="status_error">Fehler: %1$s</string>
+
 </resources>

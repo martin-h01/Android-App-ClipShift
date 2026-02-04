@@ -16,9 +16,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.clipshift.R
 
-/**
- * Section for the Expert Mode with various options
- */
 @Composable
 fun ExpertOptions(
     currentRes: String,
@@ -29,14 +26,9 @@ fun ExpertOptions(
     contentColor: Color,
 ) {
     when (currentFormat) {
-        /**
-         * List of MP4 resolutions to select from
-         */
         "MP4" -> {
             Text(stringResource(R.string.resolution), fontWeight = FontWeight.Bold, modifier = Modifier.fillMaxWidth())
-
             val resolutions = listOf("1080p", "720p", "480p", "360p", "240p", "144p")
-
             Box(modifier = Modifier.height(250.dp)) {
                 LazyColumn(modifier = Modifier.testTag("SelectableVideo")) {
                     items(resolutions) { res ->
@@ -45,16 +37,7 @@ fun ExpertOptions(
                             label = res,
                             selected = isSelected,
                             modifier = Modifier,
-                            onClick = {
-                                /**
-                                 * Logic for selecting and deselecting of options
-                                 */
-                                if (isSelected) {
-                                    onResSelected("") // if already selected -> delete selection
-                                } else {
-                                    onResSelected(res) // otherwise -> select
-                                }
-                            },
+                            onClick = { if (isSelected) onResSelected("") else onResSelected(res) },
                             color = contentColor
                         )
                     }
@@ -62,21 +45,22 @@ fun ExpertOptions(
             }
         }
 
-        /**
-         * List of MP3 qualities to select from
-         */
         "MP3" -> {
             Spacer(modifier = Modifier.height(16.dp))
-            Text(stringResource(R.string.quality), fontWeight = FontWeight.Bold, modifier = Modifier
-                .fillMaxWidth()
-                .testTag("ExpertModusAudioOptionen")
-            )
+            Text(stringResource(R.string.quality), fontWeight = FontWeight.Bold, modifier = Modifier.fillMaxWidth().testTag("ExpertModusAudioOptionen"))
 
+            // --- NEU: Dynamische Strings laden ---
+            val bestStr = stringResource(R.string.quality_best)
+            val highStr = stringResource(R.string.quality_high)
+            val goodStr = stringResource(R.string.quality_good)
+            val stdStr = stringResource(R.string.quality_standard)
+
+            // Liste bauen
             val qualities = listOf(
-                "MP3 320 kBit/s (Beste)",
-                "MP3 256 kBit/s (Hoch)",
-                "MP3 192 kBit/s (Gut)",
-                "MP3 128 kBit/s (Standard)"
+                "MP3 320 kBit/s ($bestStr)",
+                "MP3 256 kBit/s ($highStr)",
+                "MP3 192 kBit/s ($goodStr)",
+                "MP3 128 kBit/s ($stdStr)"
             )
 
             qualities.forEach { qual ->
@@ -84,16 +68,7 @@ fun ExpertOptions(
                 SelectableOption(
                     label = qual,
                     selected = isSelected,
-                    onClick = {
-                        /**
-                         * Logic for selecting and deselecting of options
-                         */
-                        if (isSelected) {
-                            onQualitySelected("") // if already selected -> delete selection
-                        } else {
-                            onQualitySelected(qual) // otherwise -> select
-                        }
-                    },
+                    onClick = { if (isSelected) onQualitySelected("") else onQualitySelected(qual) },
                     modifier = Modifier.testTag("SelectableAudio"),
                     color = contentColor
                 )

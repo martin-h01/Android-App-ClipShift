@@ -27,6 +27,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+
 val ButtonRed = Color(0xFFD32F2F)
 val ButtonBlue = Color(0xFF1976D2)
 
@@ -38,11 +39,16 @@ fun ActionButtonsSection(
     currentFormat: String,
     onFormatSelected: (String) -> Unit,
     onDownloadClick: () -> Unit,
-    modifier: Modifier
+    // WICHTIG: Standardwert "= Modifier" hinzugefügt
+    modifier: Modifier = Modifier
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
 
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    // WICHTIG: "modifier" hier verwenden, damit der TestTag aus der App ankommt
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
         /**
          * Button for the dropdown menu for selecting format.
          */
@@ -64,7 +70,7 @@ fun ActionButtonsSection(
             }
 
             /**
-             * The dropdown enu itself
+             * The dropdown menu itself
              */
             DropdownMenu(
                 expanded = menuExpanded,
