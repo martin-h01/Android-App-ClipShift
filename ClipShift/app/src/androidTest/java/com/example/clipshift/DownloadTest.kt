@@ -3,7 +3,6 @@ package com.example.clipshift
 import androidx.compose.ui.test.assertContentDescriptionEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
-import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -106,7 +105,6 @@ class DownloadTest {
 
         composeTestRule.onNodeWithText("EN").performClick()
 
-        //warten bis auch wirklich alles aktualisiert ist
         composeTestRule.waitUntil(3_000) {
             composeTestRule
                 .onAllNodesWithText("Ready")
