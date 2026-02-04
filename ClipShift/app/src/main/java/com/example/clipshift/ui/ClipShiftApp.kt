@@ -9,7 +9,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -49,9 +48,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -157,26 +156,13 @@ fun ClipShiftApp(
                     }
                 },
                 actions = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Button(
-                            onClick = {
-                                if (currentLocale == "de") {
-                                    setAppLanguage("en")
-                                } else {
-                                    setAppLanguage("de")
-                                }
-                            }
-                        ) {
-                            Text(stringResource(R.string.language_switch_button))
-                        }
-                        DarkMode(
-                            isDarkMode = isDarkMode,
-                            onDarkModeChange = { isDarkMode = it },
-                            modifier = Modifier
-                                .padding(end = 16.dp)
-                                .testTag("DarkModeButton")
-                        )
-                    }
+                    DarkMode(
+                        isDarkMode = isDarkMode,
+                        onDarkModeChange = { isDarkMode = it },
+                        modifier = Modifier
+                            .padding(end = 16.dp)
+                            .testTag("DarkModeButton")
+                    )
                 }
             )
         },
@@ -223,10 +209,10 @@ fun ClipShiftApp(
                 .padding(innerPadding)
                 .fillMaxSize()
                 .testTag("MainContent")
-                        .semantics{
-                            contentDescription = if (isDarkMode) "dark" else "light"
-                        }
-                        .background(backgroundColor)
+                .semantics {
+                    contentDescription = if (isDarkMode) "dark" else "light"
+                }
+                .background(backgroundColor)
         ) {
             Column(
                 modifier = Modifier
@@ -236,6 +222,20 @@ fun ClipShiftApp(
                     .background(backgroundColor),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Button(
+                    onClick = {
+                        if (currentLocale == "de") {
+                            setAppLanguage("en")
+                        } else {
+                            setAppLanguage("de")
+                        }
+                    }
+                ) {
+                    Text(stringResource(R.string.language_switch_button))
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 LogoSection()
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -243,15 +243,16 @@ fun ClipShiftApp(
                 UrlInputSection(
                     text = urlText,
                     onTextChange = { urlText = it },
-                modifier = Modifier.testTag("UrlInput")
-            )
+                    modifier = Modifier.testTag("UrlInput")
+                )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 ActionButtonsSection(
                     currentFormat = selectedFormat,
                     onFormatSelected = { selectedFormat = it },
-                    modifier = Modifier.testTag("DownloadButton"),onDownloadClick = {
+                    modifier = Modifier.testTag("DownloadButton"),
+                    onDownloadClick = {
                         if (urlText.isBlank()) {
                             Toast.makeText(context, context.getString(R.string.please_enter_url), Toast.LENGTH_SHORT).show()
                         } else {
@@ -291,7 +292,9 @@ fun ClipShiftApp(
                 if (isDownloading) {
                     LinearProgressIndicator(
                         progress = { progress },
-                        modifier = Modifier.fillMaxWidth().height(8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(8.dp),
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                 }
@@ -300,7 +303,8 @@ fun ClipShiftApp(
                     text = statusMsg,
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.testTag("TextOutput"),color = if (statusMsg.contains("Fehler") || statusMsg.contains("❌"))
+                    modifier = Modifier.testTag("TextOutput"),
+                    color = if (statusMsg.contains("Fehler") || statusMsg.contains("❌"))
                         MaterialTheme.colorScheme.error
                     else
                         contentColor
