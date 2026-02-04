@@ -16,6 +16,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.clipshift.R
 
+/**
+ * Logic for Expert Mode with various options
+ */
 @Composable
 fun ExpertOptions(
     currentRes: String,
@@ -26,6 +29,9 @@ fun ExpertOptions(
     contentColor: Color,
 ) {
     when (currentFormat) {
+        /**
+         * List of MP4 resolutions to select from
+         */
         "MP4" -> {
             Text(stringResource(R.string.resolution), fontWeight = FontWeight.Bold, modifier = Modifier.fillMaxWidth())
             val resolutions = listOf("1080p", "720p", "480p", "360p", "240p", "144p")
@@ -37,6 +43,9 @@ fun ExpertOptions(
                             label = res,
                             selected = isSelected,
                             modifier = Modifier,
+                            /**
+                             * Logic for selecting and deselecting options
+                             */
                             onClick = { if (isSelected) onResSelected("") else onResSelected(res) },
                             color = contentColor
                         )
@@ -45,6 +54,9 @@ fun ExpertOptions(
             }
         }
 
+        /**
+         * List of MP3 qualities to select from
+         */
         "MP3" -> {
             Spacer(modifier = Modifier.height(16.dp))
             Text(stringResource(R.string.quality), fontWeight = FontWeight.Bold, modifier = Modifier.fillMaxWidth().testTag("ExpertModusAudioOptionen"))

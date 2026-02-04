@@ -17,14 +17,13 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // IMPORTANT: Your FFmpeg file is only for ARM64.
-        // This prevents crashes on incorrect devices/emulators.
+        //Prevents crashes on incorrect devices/emulators.
         ndk {
             abiFilters.add("arm64-v8a")
         }
     }
 
-    // Explicitly include the jniLibs folder
+    //Include the jniLibs folder
     sourceSets {
         getByName("main") {
             jniLibs.srcDirs("src/main/jniLibs")
@@ -51,14 +50,13 @@ android {
         compose = true
     }
 
-    // --- PROTECTION FOR YOUR FILE ---
     packaging {
         jniLibs {
-            // 1. Forces Android to physically unpack the file (necessary for execution)
+            // Forces Android to physically unpack the file into the APK
             useLegacyPackaging = true
 
-            // 2. MOST IMPORTANT LINE: Prevents Gradle from "downscaling" the file
-            // Without this, your 150MB file will be broken after the build!
+            // Prevents Gradle from "downscaling" the file
+            // Without this, 150MB file will be broken after the build
             keepDebugSymbols.add("**/libffmpeg.so")
 
             // Conflict resolution
@@ -73,7 +71,7 @@ android {
 }
 
 dependencies {
-    // The base library (without FFmpeg, since we have it manually)
+    // The base library
     implementation("io.github.junkfood02.youtubedl-android:library:0.17.1")
 
     // Standard Android & Compose Dependencies
@@ -88,6 +86,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.appcompat)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.rules)

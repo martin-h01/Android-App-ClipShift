@@ -8,6 +8,9 @@ sealed class UiText {
     data class DynamicString(val value: String) : UiText()
     class StringResource(@StringRes val resId: Int, vararg val args: Any) : UiText()
 
+    /**
+     * Returns the string representation of the UiText
+     */
     @Composable
     fun asString(): String {
         return when(this) {

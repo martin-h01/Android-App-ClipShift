@@ -13,17 +13,25 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import java.util.Locale
 
+/**
+ * Logic for the switching of languages
+ */
 @Composable
 fun LanguageToggleButton(
     onLanguageChange: (String) -> Unit,
     contentColor: Color
 ) {
-    // Ermitteln der aktuellen Sprache
+    /**
+     * Gets the current language of the device
+     */
     val appLocales = AppCompatDelegate.getApplicationLocales()
     val firstLocale = if (!appLocales.isEmpty) appLocales.get(0) else Locale.getDefault()
     val languageCode = firstLocale?.language ?: "de"
     val isGerman = languageCode == "de"
 
+    /**
+     * Visuals of the button
+     */
     Row(
         verticalAlignment = Alignment.CenterVertically
     ) {

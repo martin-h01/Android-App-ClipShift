@@ -9,6 +9,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -16,6 +17,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.clipshift.R
 
+/**
+ * Url input section for inputting desired links for conversion
+ */
 @Composable
 fun UrlInputSection(
     text: String,
@@ -29,13 +33,13 @@ fun UrlInputSection(
             Text(
                 text = stringResource(R.string.url_placeholder),
                 color = Color.Gray,
-                // WICHTIG: Damit der Placeholder auch mittig sitzt
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center
             )
         },
         modifier = modifier
             .fillMaxWidth()
+            .testTag("UrlInput")
             .background(Color.LightGray.copy(alpha = 0.3f), RoundedCornerShape(24.dp)),
         shape = RoundedCornerShape(24.dp),
         colors = OutlinedTextFieldDefaults.colors(

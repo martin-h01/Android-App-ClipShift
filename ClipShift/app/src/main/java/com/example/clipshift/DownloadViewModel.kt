@@ -15,7 +15,6 @@ import java.io.File
 
 class DownloadViewModel(application: Application) : AndroidViewModel(application) {
 
-    // IMPORTANT: Type is now UiText
     private val _statusMsg = MutableStateFlow<UiText>(UiText.StringResource(R.string.status_ready))
     val statusMsg = _statusMsg.asStateFlow()
 
@@ -27,6 +26,9 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
 
     private var isEngineReady = false
 
+    /**
+     * Handling of downloads with the different parameters
+     */
     fun startDownload(url: String, format: String, resolution: String?, audioQuality: String?) {
         viewModelScope.launch(Dispatchers.IO) {
             _isDownloading.value = true
@@ -34,11 +36,15 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
             var finalFilePath: String? = null
             val lowerCaseFormat = format.lowercase().trim()
 
+            /**
+             * initialising ytdlp
+             */
             try {
                 if (!isEngineReady) {
                     _statusMsg.value = UiText.StringResource(R.string.status_init)
                     try {
                         YoutubeDL.getInstance().init(getApplication())
+                        //try to update ytdlp
                         YoutubeDL.getInstance().updateYoutubeDL(getApplication(), YoutubeDL.UpdateChannel.STABLE)
                         isEngineReady = true
                     } catch (e: Exception) {
@@ -49,11 +55,17 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
                 _statusMsg.value = UiText.StringResource(R.string.status_start)
                 val request = YoutubeDLRequest(url)
 
+                /**
+                 * Setting the download directory
+                 */
                 val baseDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
                 val subDir = if (lowerCaseFormat == "mp3") "ClipShift-Audio" else "ClipShift-Video"
                 val targetDir = File(baseDir, subDir)
                 if (!targetDir.exists()) targetDir.mkdirs()
 
+                /**
+                 * Setting of the file name
+                 */
                 var fileNameSuffix = ""
                 if (lowerCaseFormat == "mp4" && !resolution.isNullOrBlank()) {
                     fileNameSuffix = "_$resolution"
@@ -69,9 +81,15 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
                 }
                 request.addOption("-o", "${targetDir.absolutePath}/%(title)s${fileNameSuffix}.%(ext)s")
 
+                /**
+                 * Path for ffmpeg, which is required for mp4 conversion
+                 */
                 val nativeDir = getApplication<Application>().applicationInfo.nativeLibraryDir
                 request.addOption("--ffmpeg-location", "${nativeDir}/libffmpeg.so")
 
+                /**
+                 * Options for ytdlp to setup the process
+                 */
                 request.addOption("--force-ipv4")
                 request.addOption("--no-check-certificate")
                 request.addOption("--force-overwrites")
@@ -79,6 +97,9 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
                 request.addOption("--rm-cache-dir")
                 request.addOption("--extractor-args", "youtube:player_client=android")
 
+                /**
+                 * Logic for setting selected MP4 and MP3 settings
+                 */
                 if (lowerCaseFormat == "mp3") {
                     request.addOption("-x")
                     request.addOption("--audio-format", "mp3")
@@ -102,6 +123,9 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
                     }
                 }
 
+                /**
+                 * Gives ytdlp the commands and starts the download
+                 */
                 YoutubeDL.getInstance().execute(request) { progress, _, line ->
                     _progress.value = progress / 100f
                     _statusMsg.value = UiText.StringResource(R.string.status_loading, progress.toInt())
@@ -139,6 +163,9 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
         _statusMsg.value = UiText.StringResource(R.string.status_done)
     }
 
+    /**
+     * Error handling
+     */
     private fun handleError(e: Exception, filePath: String?) {
         val msg = e.message ?: ""
         Log.e("DownloadViewModel", "Error", e)

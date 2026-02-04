@@ -39,12 +39,10 @@ fun ActionButtonsSection(
     currentFormat: String,
     onFormatSelected: (String) -> Unit,
     onDownloadClick: () -> Unit,
-    // WICHTIG: Standardwert "= Modifier" hinzugefügt
     modifier: Modifier = Modifier
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
 
-    // WICHTIG: "modifier" hier verwenden, damit der TestTag aus der App ankommt
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
