@@ -1,3 +1,27 @@
 <resources>
     <string name="app_name">ClipShift</string>
+    <string name="info_button_text">Info</string>
+    <string name="simple_mode">Simple Mode</string>
+    <string name="expert_mode">Expert Mode</string>
+    <string name="resolution">Resolution</string>
+    <string name="quality">Quality</string>
+    <string name="language_switch_button">Sprache wechseln</string>
+    <string name="about_app_title">About the App</string>
+    <string name="about_app_text">
+        Welcome to ClipShift!\n\n
+        Your all-in-one downloader for most social media apps:\n
+        ✅ YouTube\n
+        ✅ Instagram\n
+        ✅ Twitter (X)\n
+        ... and many more!\n\n
+        🚀 Simple Mode:\n
+        Just copy the link (whether it's a video, reel, or story), paste it in, and hit Download. The app automatically delivers the best quality for you.\n\n
+        🛠️ Expert Mode:\n
+        Want full control? Manually choose between MP4 (video) and MP3 (audio). Decide on the resolution (e.g., 1080p) or the audio bitrate for your music yourself.\n\n
+        📂 Storage Location:\n
+        Your downloads land directly in the "Downloads/ClipShift" folder on your phone.
+    </string>
+    <string name="close_button">Close</string>
+    <string name="no_storage_permission">Download not possible without storage access!</string>
+    <string name="please_enter_url">Please enter a URL first!</string>
 </resources>
