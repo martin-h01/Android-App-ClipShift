@@ -6,7 +6,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -20,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.os.LocaleListCompat
@@ -28,7 +26,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.clipshift.DownloadViewModel
 import com.example.clipshift.R
 import com.example.clipshift.ui.sections.*
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,13 +34,12 @@ fun ClipShiftApp(
 ) {
     val context = LocalContext.current
 
-    // STATE
     var selectedTab by remember { mutableIntStateOf(0) }
     var urlText by remember { mutableStateOf("") }
     var showInfoDialog by remember { mutableStateOf(false) }
 
     var selectedResolution by remember { mutableStateOf("") }
-    var selectedQuality by remember { mutableStateOf("MP3 192 kBit/s (Gut)") }
+    var selectedQuality by remember { mutableStateOf("MP3 192 kBit/s (Good)") }
     var selectedFormat by remember { mutableStateOf("MP4") }
 
     val statusMsg by viewModel.statusMsg.collectAsState()
@@ -51,13 +47,11 @@ fun ClipShiftApp(
     val progress by viewModel.progress.collectAsState()
     var isDarkMode by remember { mutableStateOf(false) }
 
-    // Colors
     val backgroundColor = if (isDarkMode) Color.DarkGray else Color.White
     val contentColor = if (isDarkMode) Color.White else Color.Black
     val selectedTextColor = if (isDarkMode) Color.White else Color.Black
     val selectedIconColor = if (isDarkMode) Color(0xFF2196F3) else Color(0xFFFF0000)
 
-    // Permission Logic
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
@@ -68,7 +62,6 @@ fun ClipShiftApp(
         }
     }
 
-    // Language Change Function
     fun setAppLanguage(languageCode: String) {
         val appLocale = LocaleListCompat.forLanguageTags(languageCode)
         AppCompatDelegate.setApplicationLocales(appLocale)
@@ -78,26 +71,24 @@ fun ClipShiftApp(
         containerColor = backgroundColor,
         contentColor = contentColor,
         topBar = {
-            // WICHTIG: CenterAlignedTopAppBar sorgt dafür, dass der "Title" exakt mittig ist
             CenterAlignedTopAppBar(
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = backgroundColor),
-
-                // 1. LINKS: Info Button
                 navigationIcon = {
                     IconButton(onClick = { showInfoDialog = true }) {
-                        Icon(Icons.Default.Info, contentDescription = "Info", tint = contentColor)
+                        Icon(
+                            Icons.Default.Info,
+                            contentDescription = "Info",
+                            tint = contentColor,
+                            modifier = Modifier.size(38.dp)
+                        )
                     }
                 },
-
-                // 2. MITTE (Title Slot): Der Sprach-Toggle
                 title = {
                     LanguageToggleButton(
                         onLanguageChange = { setAppLanguage(it) },
                         contentColor = contentColor
                     )
                 },
-
-                // 3. RECHTS: Dark Mode Button
                 actions = {
                     DarkMode(
                         isDarkMode = isDarkMode,
@@ -168,11 +159,15 @@ fun ClipShiftApp(
                     Spacer(modifier = Modifier.height(8.dp))
                 }
 
+                val currentStatusText = statusMsg.asString()
                 Text(
-                    text = statusMsg,
+                    text = currentStatusText,
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center,
-                    color = if (statusMsg.contains("Fehler") || statusMsg.contains("❌")) MaterialTheme.colorScheme.error else contentColor
+                    color = if (currentStatusText.contains("Error") || currentStatusText.contains("❌"))
+                        MaterialTheme.colorScheme.error
+                    else
+                        contentColor
                 )
 
                 if (selectedTab == 1) {
@@ -191,7 +186,6 @@ fun ClipShiftApp(
             }
         }
 
-        // INFO DIALOG
         if (showInfoDialog) {
             AlertDialog(
                 onDismissRequest = { showInfoDialog = false },
@@ -205,38 +199,5 @@ fun ClipShiftApp(
                 containerColor = backgroundColor
             )
         }
-    }
-}
-
-// --- DEIN STYLE FÜR DEN SPRACH-BUTTON [ DE | EN ] ---
-@Composable
-fun LanguageToggleButton(
-    onLanguageChange: (String) -> Unit,
-    contentColor: Color
-) {
-    val appLocales = AppCompatDelegate.getApplicationLocales()
-    val firstLocale = if (!appLocales.isEmpty) appLocales.get(0) else Locale.getDefault()
-    val languageCode = firstLocale?.language ?: "de"
-    val isGerman = languageCode == "de"
-
-    // WICHTIG: Kein Padding rechts mehr, da er jetzt mittig steht
-    Row(
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text("[ ", color = contentColor, fontWeight = FontWeight.Bold)
-        Text(
-            text = "DE",
-            fontWeight = if (isGerman) FontWeight.Bold else FontWeight.Normal,
-            color = if (isGerman) contentColor else contentColor.copy(alpha = 0.5f),
-            modifier = Modifier.clickable { if (!isGerman) onLanguageChange("de") }.padding(horizontal = 4.dp)
-        )
-        Text("|", color = contentColor)
-        Text(
-            text = "EN",
-            fontWeight = if (!isGerman) FontWeight.Bold else FontWeight.Normal,
-            color = if (!isGerman) contentColor else contentColor.copy(alpha = 0.5f),
-            modifier = Modifier.clickable { if (isGerman) onLanguageChange("en") }.padding(horizontal = 4.dp)
-        )
-        Text(" ]", color = contentColor, fontWeight = FontWeight.Bold)
     }
 }

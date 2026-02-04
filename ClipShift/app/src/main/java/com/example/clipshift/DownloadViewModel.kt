@@ -15,8 +15,8 @@ import java.io.File
 
 class DownloadViewModel(application: Application) : AndroidViewModel(application) {
 
-    // Wir laden den Start-Text direkt aus den Ressourcen
-    private val _statusMsg = MutableStateFlow(getApplication<Application>().getString(R.string.status_ready))
+    // IMPORTANT: Type is now UiText
+    private val _statusMsg = MutableStateFlow<UiText>(UiText.StringResource(R.string.status_ready))
     val statusMsg = _statusMsg.asStateFlow()
 
     private val _progress = MutableStateFlow(0f)
@@ -27,47 +27,33 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
 
     private var isEngineReady = false
 
-    /**
-     * Handling of download with the different parameters
-     */
     fun startDownload(url: String, format: String, resolution: String?, audioQuality: String?) {
         viewModelScope.launch(Dispatchers.IO) {
             _isDownloading.value = true
             _progress.value = 0f
             var finalFilePath: String? = null
             val lowerCaseFormat = format.lowercase().trim()
-            val context = getApplication<Application>() // Context für Strings holen
 
             try {
-                /**
-                 * Initialising of ytdlp
-                 */
                 if (!isEngineReady) {
-                    _statusMsg.value = context.getString(R.string.status_init)
+                    _statusMsg.value = UiText.StringResource(R.string.status_init)
                     try {
-                        YoutubeDL.getInstance().init(context)
-                        YoutubeDL.getInstance().updateYoutubeDL(context, YoutubeDL.UpdateChannel.STABLE)
+                        YoutubeDL.getInstance().init(getApplication())
+                        YoutubeDL.getInstance().updateYoutubeDL(getApplication(), YoutubeDL.UpdateChannel.STABLE)
                         isEngineReady = true
                     } catch (e: Exception) {
-                        Log.e("DownloadVM", "Init/Update Fehler", e)
+                        Log.e("DownloadVM", "Init/Update Error", e)
                     }
                 }
 
-                _statusMsg.value = context.getString(R.string.status_start)
+                _statusMsg.value = UiText.StringResource(R.string.status_start)
                 val request = YoutubeDLRequest(url)
 
-                /**
-                 * Setting of the download folder
-                 */
                 val baseDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
                 val subDir = if (lowerCaseFormat == "mp3") "ClipShift-Audio" else "ClipShift-Video"
                 val targetDir = File(baseDir, subDir)
                 if (!targetDir.exists()) targetDir.mkdirs()
 
-                /**
-                 * Setting of the file name
-                 * WICHTIG: Prüfung auf .contains("320"), damit es sprachunabhängig ist
-                 */
                 var fileNameSuffix = ""
                 if (lowerCaseFormat == "mp4" && !resolution.isNullOrBlank()) {
                     fileNameSuffix = "_$resolution"
@@ -83,15 +69,9 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
                 }
                 request.addOption("-o", "${targetDir.absolutePath}/%(title)s${fileNameSuffix}.%(ext)s")
 
-                /**
-                 * Path for ffmpeg
-                 */
-                val nativeDir = context.applicationInfo.nativeLibraryDir
+                val nativeDir = getApplication<Application>().applicationInfo.nativeLibraryDir
                 request.addOption("--ffmpeg-location", "${nativeDir}/libffmpeg.so")
 
-                /**
-                 * options for ytdlp
-                 */
                 request.addOption("--force-ipv4")
                 request.addOption("--no-check-certificate")
                 request.addOption("--force-overwrites")
@@ -99,29 +79,21 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
                 request.addOption("--rm-cache-dir")
                 request.addOption("--extractor-args", "youtube:player_client=android")
 
-                /**
-                 * Logic for setting selected Mp4 and Mp3 settings
-                 */
                 if (lowerCaseFormat == "mp3") {
                     request.addOption("-x")
                     request.addOption("--audio-format", "mp3")
                     request.addOption("-f", "bestaudio/best")
-
-                    // --- WICHTIGSTE ÄNDERUNG: SPRACHUNABHÄNGIGE BITRATE ---
-                    // Wir prüfen nur, ob die Zahl im String vorkommt.
-                    // Egal ob "MP3 320 kBit/s (Beste)" oder "MP3 320 kBit/s (Best)"
                     val bitrate = when {
                         audioQuality?.contains("320") == true -> "320K"
                         audioQuality?.contains("256") == true -> "256K"
                         audioQuality?.contains("192") == true -> "192K"
                         audioQuality?.contains("128") == true -> "128K"
-                        else -> "192K" // Standard Fallback
+                        else -> "192K"
                     }
                     request.addOption("--audio-quality", bitrate)
 
                 } else if (lowerCaseFormat == "mp4") {
                     request.addOption("--merge-output-format", "mp4")
-
                     if (resolution.isNullOrBlank()) {
                         request.addOption("-f", "bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best")
                     } else {
@@ -130,13 +102,9 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
                     }
                 }
 
-                /**
-                 * Start Download
-                 */
                 YoutubeDL.getInstance().execute(request) { progress, _, line ->
                     _progress.value = progress / 100f
-                    // Status mit Prozentzahl aus Strings laden
-                    _statusMsg.value = context.getString(R.string.status_loading, progress.toInt())
+                    _statusMsg.value = UiText.StringResource(R.string.status_loading, progress.toInt())
                     getFileNameFromLog(line)?.let { finalFilePath = it }
                 }
 
@@ -161,8 +129,6 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
 
     private fun renameAndSetSuccess(filePath: String?, format: String) {
         val file = if (filePath != null) File(filePath) else return
-        val context = getApplication<Application>()
-
         if (format == "mp3" && file.exists()) {
             val correctName = file.absolutePath.substringBeforeLast(".") + ".mp3"
             val newFile = File(correctName)
@@ -170,15 +136,12 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
                 file.renameTo(newFile)
             }
         }
-        _statusMsg.value = context.getString(R.string.status_done)
+        _statusMsg.value = UiText.StringResource(R.string.status_done)
     }
 
-    /**
-     * Error handling
-     */
     private fun handleError(e: Exception, filePath: String?) {
         val msg = e.message ?: ""
-        Log.e("DownloadViewModel", "Fehler", e)
+        Log.e("DownloadViewModel", "Error", e)
 
         if (msg.contains("Postprocessing") && filePath != null && File(filePath).exists()) {
             renameAndSetSuccess(filePath, "mp3")
@@ -187,7 +150,6 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
         }
 
         val cleanMsg = msg.replace("WARNING:", "").replace("ERROR:", "")
-        // Fehlermeldung formatiert ausgeben
-        _statusMsg.value = getApplication<Application>().getString(R.string.status_error, cleanMsg.take(60))
+        _statusMsg.value = UiText.StringResource(R.string.status_error, cleanMsg.take(60))
     }
 }

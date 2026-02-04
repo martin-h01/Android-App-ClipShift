@@ -13,7 +13,7 @@ class ClipShiftApplication : Application() {
         try {
             YoutubeDL.getInstance().init(this)
         } catch (e: Exception) {
-            Log.e("ClipShiftApp", "Fehler beim Init", e)
+            Log.e("ClipShiftApp", "Failed to initialize YoutubeDL", e)
         }
     }
 }

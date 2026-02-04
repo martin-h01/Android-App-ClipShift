@@ -9,27 +9,31 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.clipshift.R
 
-/**
- * Url input Section for inputting desired Link for conversion
- */
 @Composable
 fun UrlInputSection(
     text: String,
     onTextChange: (String) -> Unit,
-    // WICHTIG: Standardwert "= Modifier" hinzugefügt
     modifier: Modifier = Modifier
 ) {
     OutlinedTextField(
         value = text,
         onValueChange = onTextChange,
-        placeholder = { Text("Enter your URL", color = Color.Gray) },
-        // WICHTIG: Wir nutzen hier den übergebenen 'modifier' (der enthält den TestTag),
-        // und hängen dann erst fillMaxWidth und background an.
+        placeholder = {
+            Text(
+                text = stringResource(R.string.url_placeholder),
+                color = Color.Gray,
+                // WICHTIG: Damit der Placeholder auch mittig sitzt
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
+            )
+        },
         modifier = modifier
             .fillMaxWidth()
             .background(Color.LightGray.copy(alpha = 0.3f), RoundedCornerShape(24.dp)),
@@ -38,6 +42,7 @@ fun UrlInputSection(
             focusedBorderColor = Color.Transparent,
             unfocusedBorderColor = Color.Transparent
         ),
+        // WICHTIG: Damit die Eingabe mittig sitzt
         textStyle = TextStyle(textAlign = TextAlign.Center, fontSize = 18.sp),
         singleLine = true
     )

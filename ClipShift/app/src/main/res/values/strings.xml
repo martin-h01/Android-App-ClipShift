@@ -25,5 +25,6 @@
         <string name="status_loading">Downloading... %1$d%%</string>
         <string name="status_done">✅ Done!</string>
         <string name="status_error">Error: %1$s</string>
+        <string name="url_placeholder">Enter your URL</string>
 </resources>
 

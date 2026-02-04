@@ -49,13 +49,11 @@ fun ExpertOptions(
             Spacer(modifier = Modifier.height(16.dp))
             Text(stringResource(R.string.quality), fontWeight = FontWeight.Bold, modifier = Modifier.fillMaxWidth().testTag("ExpertModusAudioOptionen"))
 
-            // --- NEU: Dynamische Strings laden ---
             val bestStr = stringResource(R.string.quality_best)
             val highStr = stringResource(R.string.quality_high)
             val goodStr = stringResource(R.string.quality_good)
             val stdStr = stringResource(R.string.quality_standard)
 
-            // Liste bauen
             val qualities = listOf(
                 "MP3 320 kBit/s ($bestStr)",
                 "MP3 256 kBit/s ($highStr)",
