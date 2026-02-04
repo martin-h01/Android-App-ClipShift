@@ -42,11 +42,6 @@ Die App ist so aufgebaut, dass sie **mehrsprachig erweiterbar** ist (über `stri
     - Dark-/Light-Mode Umschaltung
     - Expertenmodus (Auswahl von Auflösung / Qualität)
     - Download-Flow (simuliert)
-
-⚠️ **Einschränkungen:**
-- Tests erwarten **deutsche Texte**
-- Tests sind für lokale Emulator-Ausführung gedacht
-
 ---
 
 ##  Emulator- & Geräte-Kompatibilität
