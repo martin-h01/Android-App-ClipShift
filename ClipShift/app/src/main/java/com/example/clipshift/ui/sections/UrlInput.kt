@@ -46,7 +46,6 @@ fun UrlInputSection(
             focusedBorderColor = Color.Transparent,
             unfocusedBorderColor = Color.Transparent
         ),
-        // WICHTIG: Damit die Eingabe mittig sitzt
         textStyle = TextStyle(textAlign = TextAlign.Center, fontSize = 18.sp),
         singleLine = true
     )
