@@ -1,7 +1,7 @@
 # Team Members & Category
-Martin Herdt (mh370)
-Emanuel Schulz (es174)
-Yusuf Boylu (yb028)
+Martin Herdt 
+Emanuel Schulz
+
 
 Networking & Media
 
